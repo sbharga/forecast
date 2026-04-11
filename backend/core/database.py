@@ -1,43 +1,64 @@
 """
-core/database.py — PostgreSQL connection and event helpers.
+core/database.py — SQLite connection and event helpers.
 
-Uses psycopg2 with a standard DATABASE_URL connection string.
-All workers write here. The API reads from here.
-
-Setup:
-  1. Install PostgreSQL locally or spin up a free instance (Render, Railway, etc.)
-  2. Run backend/schema.sql to create the events table
-  3. Set DATABASE_URL in your .env file
+The database file lives at backend/scope.db (created automatically on first run).
+No environment variables required.
 """
 
 import os
+import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-import psycopg2
-import psycopg2.extras
-from dotenv import load_dotenv
-
-load_dotenv()
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "scope.db")
 
 
-def _get_conn():
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise RuntimeError("DATABASE_URL must be set in .env")
-    return psycopg2.connect(url)
+def _get_conn() -> sqlite3.Connection:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 @contextmanager
 def _cursor():
-    """Context manager that yields a DictCursor and auto-commits/rolls back."""
+    """Context manager that yields a cursor and auto-commits/rolls back."""
     conn = _get_conn()
     try:
-        with conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-                yield cur
+        cur = conn.cursor()
+        yield cur
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
+
+
+# ── Schema init ────────────────────────────────────────────────────────────
+
+def init_db() -> None:
+    """Create the events table if it doesn't exist. Called on API startup."""
+    with _cursor() as cur:
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                id         INTEGER PRIMARY KEY,
+                title      TEXT    NOT NULL,
+                lat        REAL    NOT NULL,
+                lng        REAL    NOT NULL,
+                start_time TEXT    NOT NULL,
+                link       TEXT    NOT NULL,
+                location   TEXT,
+                source     TEXT    NOT NULL DEFAULT 'terplink',
+                created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+            )
+            """
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS events_start_time_idx ON events (start_time)"
+        )
 
 
 # ── Write ──────────────────────────────────────────────────────────────────
@@ -45,26 +66,25 @@ def _cursor():
 def upsert_events(events: List[Dict[str, Any]]) -> int:
     """
     Insert or update events by primary key (id).
-    Returns the number of rows written.
+    Returns the number of rows affected.
     """
     if not events:
         return 0
 
     with _cursor() as cur:
-        psycopg2.extras.execute_values(
-            cur,
+        cur.executemany(
             """
-            INSERT INTO events (id, title, lat, lng, start_time, link, location, source)
-            VALUES %s
-            ON CONFLICT (id) DO UPDATE SET
-                title      = EXCLUDED.title,
-                lat        = EXCLUDED.lat,
-                lng        = EXCLUDED.lng,
-                start_time = EXCLUDED.start_time,
-                link       = EXCLUDED.link,
-                location   = EXCLUDED.location,
-                source     = EXCLUDED.source,
-                updated_at = NOW()
+            INSERT INTO events (id, title, lat, lng, start_time, link, location, source, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(id) DO UPDATE SET
+                title      = excluded.title,
+                lat        = excluded.lat,
+                lng        = excluded.lng,
+                start_time = excluded.start_time,
+                link       = excluded.link,
+                location   = excluded.location,
+                source     = excluded.source,
+                updated_at = datetime('now')
             """,
             [
                 (
@@ -89,14 +109,21 @@ def get_upcoming_events() -> List[Dict[str, Any]]:
     """Return all future events with valid coordinates, ordered by start_time."""
     with _cursor() as cur:
         cur.execute(
-            """
-            SELECT id, title, lat, lng, start_time, link, location, source
-            FROM   events
-            WHERE  start_time >= NOW()
-            ORDER  BY start_time
-            """
+            "SELECT id, title, lat, lng, start_time, link, location, source "
+            "FROM events ORDER BY start_time"
         )
-        return [
-            {**dict(row), "start_time": row["start_time"].isoformat()}
-            for row in cur.fetchall()
-        ]
+        rows = [dict(r) for r in cur.fetchall()]
+
+    # Filter to future events in Python to avoid SQLite timezone quirks
+    now = datetime.now(timezone.utc)
+    result = []
+    for r in rows:
+        try:
+            st = datetime.fromisoformat(r["start_time"])
+            if st.tzinfo is None:
+                st = st.replace(tzinfo=timezone.utc)
+            if st >= now:
+                result.append(r)
+        except ValueError:
+            result.append(r)  # include if unparseable rather than silently drop
+    return result

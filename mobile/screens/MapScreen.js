@@ -13,16 +13,33 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRoute } from '@react-navigation/native';
+import * as Location from 'expo-location';
 import { Calendar, ExternalLink, MapPin, Navigation, X } from 'lucide-react-native';
 import { useEvents } from '../contexts/EventsContext';
+import { CATEGORIES, categorizeEvent } from '../utils/categories';
 
 // ─── Map ───────────────────────────────────────────────────────────────────
+const CAMPUS_CENTER = { latitude: 38.9869, longitude: -76.9426 };
 const IRIBE_REGION = {
-  latitude: 38.9891,
-  longitude: -76.9364,
+  ...CAMPUS_CENTER,
   latitudeDelta: 0.012,
   longitudeDelta: 0.012,
 };
+
+// Haversine distance in miles between two {latitude, longitude} points
+function distanceMiles(a, b) {
+  const R   = 3958.8; // Earth radius in miles
+  const lat1 = (a.latitude  * Math.PI) / 180;
+  const lat2 = (b.latitude  * Math.PI) / 180;
+  const dLat = ((b.latitude  - a.latitude)  * Math.PI) / 180;
+  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(h));
+}
+
+const CAMPUS_RADIUS_MILES = 5;
 
 // ─── Theme ─────────────────────────────────────────────────────────────────
 const SCOPE_BLUE = '#007AFF';
@@ -116,25 +133,52 @@ export default function MapScreen() {
         showsCompass={false}
         toolbarEnabled={false}
       >
-        {filteredEvents.map(event => (
-          <Marker
-            key={event.id}
-            coordinate={{ latitude: event.lat, longitude: event.lng }}
-            onPress={() => setSelectedEvent(event)}
-            tracksViewChanges={false}
-          >
-            <View style={styles.markerBubble}>
-              <MapPin size={14} color="#fff" />
-            </View>
-          </Marker>
-        ))}
+        {filteredEvents.map(event => {
+          const cat            = categorizeEvent(event);
+          const color          = CATEGORIES[cat].color;
+          const isHighPriority = event.priorityScore > 80;
+          return (
+            <Marker
+              key={event.id}
+              coordinate={{ latitude: event.lat, longitude: event.lng }}
+              onPress={() => setSelectedEvent(event)}
+              tracksViewChanges={false}
+            >
+              <View style={[
+                styles.markerBubble,
+                { backgroundColor: color, shadowColor: color },
+                isHighPriority && styles.markerBubbleHighPriority,
+              ]}>
+                <MapPin size={14} color="#fff" />
+              </View>
+            </Marker>
+          );
+        })}
       </MapView>
 
-      {/* ── FAB — center on campus ──────────────────────────────────── */}
+      {/* ── FAB — center on user location (if on campus) else campus ── */}
       <SafeAreaView pointerEvents="box-none" style={styles.fabContainer}>
         <TouchableOpacity
           style={styles.fab}
-          onPress={() => mapRef.current?.animateToRegion(IRIBE_REGION, 450)}
+          onPress={async () => {
+            try {
+              const { status } = await Location.getForegroundPermissionsAsync();
+              if (status === 'granted') {
+                const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                const userCoord = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                const miles = distanceMiles(userCoord, CAMPUS_CENTER);
+                if (miles <= CAMPUS_RADIUS_MILES) {
+                  mapRef.current?.animateToRegion(
+                    { ...userCoord, latitudeDelta: 0.008, longitudeDelta: 0.008 },
+                    450
+                  );
+                  return;
+                }
+              }
+            } catch (_) {}
+            // Fall back to campus center
+            mapRef.current?.animateToRegion(IRIBE_REGION, 450);
+          }}
           activeOpacity={0.85}
         >
           <Navigation size={20} color="#fff" />
@@ -265,6 +309,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.45, shadowRadius: 5, elevation: 5,
     borderWidth: 2, borderColor: '#fff',
+  },
+  markerBubbleHighPriority: {
+    transform: [{ scale: 1.2 }],
+    shadowOpacity: 0.75,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 2.5,
   },
 
   fabContainer: {

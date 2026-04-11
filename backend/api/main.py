@@ -1,19 +1,27 @@
 """
-api/main.py — FastAPI server. Reads from Supabase; never calls TerpLink directly.
+api/main.py — FastAPI server. Reads from SQLite; never calls TerpLink directly.
 Workers populate the database; this just serves it.
 
 Start:  uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 """
 
+from contextlib import asynccontextmanager
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from core.database import get_upcoming_events
+from core.database import get_upcoming_events, init_db
 
-app = FastAPI(title="Scope API", version="0.3.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Scope API", version="0.4.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,9 +51,6 @@ def get_events():
     """
     try:
         return get_upcoming_events()
-    except RuntimeError as e:
-        # Missing env vars — surface a helpful message
-        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 

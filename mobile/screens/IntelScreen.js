@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
+import { useEvents } from '../contexts/EventsContext';
 
 // ─── Theme ─────────────────────────────────────────────────────────────────
 const SCOPE_BLUE = '#007AFF';
@@ -18,7 +19,7 @@ const SLATE      = '#64748B';
 const BG         = '#F2F2F7';
 const GREEN      = '#34C759';
 
-// ─── Source statuses ───────────────────────────────────────────────────────
+// ─── Source statuses (display-only) ───────────────────────────────────────
 const SOURCES = [
   { id: 'terplink', label: 'TerpLink',      detail: 'Syncing events',      connected: true  },
   { id: 'cs_news',  label: 'UMD CS News',   detail: 'RSS feed active',     connected: true  },
@@ -26,12 +27,10 @@ const SOURCES = [
   { id: 'gmail',    label: 'Gmail',         detail: 'Not configured',      connected: false },
 ];
 
-const DEFAULT_KEYWORDS = ['Internship', 'Research', 'Hackathon', 'Python'];
-
 // ─── Screen ────────────────────────────────────────────────────────────────
 export default function IntelScreen() {
-  const [keywords, setKeywords] = useState(DEFAULT_KEYWORDS);
-  const [input, setInput]       = useState('');
+  const { userKeywords: keywords, setUserKeywords: setKeywords } = useEvents();
+  const [input, setInput] = useState('');
 
   function addKeyword() {
     const kw = input.trim();

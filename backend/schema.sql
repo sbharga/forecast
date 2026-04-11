@@ -1,34 +1,20 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Scope — Supabase schema
--- Paste this into the Supabase SQL Editor and click Run.
+-- Scope — SQLite schema
+-- This file is for reference. The API auto-creates the schema on startup
+-- via init_db() in core/database.py.
 -- ─────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS events (
-  id         BIGINT           PRIMARY KEY,
-  title      TEXT             NOT NULL,
-  lat        DOUBLE PRECISION NOT NULL,
-  lng        DOUBLE PRECISION NOT NULL,
-  start_time TIMESTAMPTZ      NOT NULL,
-  link       TEXT             NOT NULL,
-  location   TEXT,
-  source     TEXT             NOT NULL DEFAULT 'terplink',
-  created_at TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ      NOT NULL DEFAULT NOW()
+    id         INTEGER PRIMARY KEY,
+    title      TEXT    NOT NULL,
+    lat        REAL    NOT NULL,
+    lng        REAL    NOT NULL,
+    start_time TEXT    NOT NULL,          -- ISO 8601 string, e.g. 2026-04-11T17:00:00+00:00
+    link       TEXT    NOT NULL,
+    location   TEXT,
+    source     TEXT    NOT NULL DEFAULT 'terplink',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
--- Fast date-range queries for GET /api/events
 CREATE INDEX IF NOT EXISTS events_start_time_idx ON events (start_time);
-
--- Auto-bump updated_at on every update
-CREATE OR REPLACE FUNCTION _set_updated_at()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS events_updated_at ON events;
-CREATE TRIGGER events_updated_at
-  BEFORE UPDATE ON events
-  FOR EACH ROW EXECUTE FUNCTION _set_updated_at();

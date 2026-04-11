@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -11,8 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Clock, MapPin, Navigation, Search } from 'lucide-react-native';
+import { ArrowUpDown, Clock, MapPin, Navigation, Search, Zap } from 'lucide-react-native';
 import { useEvents } from '../contexts/EventsContext';
+import { CATEGORIES, categorizeEvent } from '../utils/categories';
 
 // ─── Theme ─────────────────────────────────────────────────────────────────
 const SCOPE_BLUE = '#007AFF';
@@ -25,7 +27,7 @@ const UMD_RED    = '#E21833';
 function isLive(event) {
   const now   = Date.now();
   const start = new Date(event.start_time).getTime();
-  const end   = start + 2 * 60 * 60 * 1000; // assume 2-hour window
+  const end   = start + 2 * 60 * 60 * 1000;
   return now >= start && now <= end;
 }
 
@@ -38,12 +40,57 @@ function formatDateTime(isoString) {
   );
 }
 
+// ─── Top Pick Card (horizontal carousel) ──────────────────────────────────
+function TopPickCard({ event, onViewOnMap }) {
+  const cat      = categorizeEvent(event);
+  const catColor = CATEGORIES[cat].color;
+  const catLabel = CATEGORIES[cat].label;
+
+  return (
+    <View style={styles.topPickCard}>
+      <View style={[styles.topPickBanner, { backgroundColor: catColor + '18', borderLeftColor: catColor }]}>
+        <Text style={[styles.topPickBannerText, { color: catColor }]}>{catLabel}</Text>
+        <View style={[styles.scorePill, { backgroundColor: catColor + '22' }]}>
+          <Zap size={9} color={catColor} />
+          <Text style={[styles.scorePillText, { color: catColor }]}>{event.priorityScore}</Text>
+        </View>
+      </View>
+      <View style={styles.topPickBody}>
+        <Text style={styles.topPickTitle} numberOfLines={2}>{event.title}</Text>
+        <View style={styles.topPickMeta}>
+          <Clock size={11} color={SLATE} />
+          <Text style={styles.topPickMetaText}>{formatDateTime(event.start_time)}</Text>
+        </View>
+        <TouchableOpacity style={styles.topPickMapBtn} onPress={onViewOnMap} activeOpacity={0.75}>
+          <Navigation size={11} color={SCOPE_BLUE} />
+          <Text style={styles.topPickMapBtnText}>View on Map</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── Event Card ────────────────────────────────────────────────────────────
 function EventCard({ event, onViewOnMap }) {
-  const live = isLive(event);
+  const live     = isLive(event);
+  const cat      = categorizeEvent(event);
+  const catColor = CATEGORIES[cat].color;
+  const catLabel = CATEGORIES[cat].label;
+
   return (
     <View style={styles.card}>
-      <View style={styles.cardHeader}>
+      {/* Category banner strip */}
+      <View style={[styles.categoryBanner, { backgroundColor: catColor + '18', borderLeftColor: catColor }]}>
+        <Text style={[styles.categoryBannerText, { color: catColor }]}>{catLabel}</Text>
+        {event.priorityScore > 0 && (
+          <View style={[styles.scorePill, { backgroundColor: catColor + '22' }]}>
+            <Zap size={9} color={catColor} />
+            <Text style={[styles.scorePillText, { color: catColor }]}>{event.priorityScore}</Text>
+          </View>
+        )}
+      </View>
+
+      <View style={[styles.cardHeader, { marginTop: 10 }]}>
         <Text style={styles.cardTitle} numberOfLines={2}>{event.title}</Text>
         {live && (
           <View style={styles.liveBadge}>
@@ -74,24 +121,42 @@ function EventCard({ event, onViewOnMap }) {
 
 // ─── Screen ────────────────────────────────────────────────────────────────
 export default function FeedScreen() {
-  const { events, loading, error } = useEvents();
+  const { events, loading, error, userKeywords } = useEvents();
   const navigation = useNavigation();
-  const [query, setQuery] = useState('');
+  const [query,  setQuery]  = useState('');
+  const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'time'
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return events;
-    const q = query.toLowerCase();
-    return events.filter(
-      e =>
-        e.title.toLowerCase().includes(q) ||
-        (e.location || '').toLowerCase().includes(q)
-    );
-  }, [events, query]);
+  // Top 3 highest-scored events (only shown when user has keywords)
+  const topPicks = useMemo(() => {
+    if (userKeywords.length === 0) return [];
+    return [...events]
+      .filter(e => e.priorityScore > 0)
+      .sort((a, b) => b.priorityScore - a.priorityScore)
+      .slice(0, 3);
+  }, [events, userKeywords]);
+
+  const showTopPicks = topPicks.length > 0;
+
+  // Text-filtered + sorted list
+  const sorted = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    const filtered = q
+      ? events.filter(
+          e =>
+            e.title.toLowerCase().includes(q) ||
+            (e.location || '').toLowerCase().includes(q)
+        )
+      : events;
+
+    const list = [...filtered];
+    if (sortBy === 'priority') return list.sort((a, b) => b.priorityScore - a.priorityScore);
+    return list.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+  }, [events, query, sortBy]);
 
   function handleViewOnMap(event) {
     navigation.navigate('Map', {
-      focusEvent:      event,
-      focusTimestamp:  Date.now(),
+      focusEvent:     event,
+      focusTimestamp: Date.now(),
     });
   }
 
@@ -99,10 +164,22 @@ export default function FeedScreen() {
     <SafeAreaView style={styles.root} edges={['top']}>
       {/* ── Header ──────────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Opportunities</Text>
-        <Text style={styles.headerSub}>
-          {loading ? 'Loading…' : `${filtered.length} event${filtered.length !== 1 ? 's' : ''}`}
-        </Text>
+        <View>
+          <Text style={styles.headerTitle}>Opportunities</Text>
+          <Text style={styles.headerSub}>
+            {loading ? 'Loading…' : `${sorted.length} event${sorted.length !== 1 ? 's' : ''}`}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.sortBtn, sortBy === 'time' && styles.sortBtnActive]}
+          onPress={() => setSortBy(s => s === 'priority' ? 'time' : 'priority')}
+          activeOpacity={0.75}
+        >
+          <ArrowUpDown size={13} color={sortBy === 'time' ? '#fff' : SCOPE_BLUE} />
+          <Text style={[styles.sortBtnText, sortBy === 'time' && styles.sortBtnTextActive]}>
+            {sortBy === 'priority' ? 'By Priority' : 'By Time'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Search bar ──────────────────────────────────────────────── */}
@@ -128,10 +205,30 @@ export default function FeedScreen() {
         <Text style={styles.errorText}>⚠ {error}</Text>
       )}
 
-      {/* ── List ────────────────────────────────────────────────────── */}
+      {/* ── Top Picks carousel ──────────────────────────────────────── */}
+      {!loading && !error && showTopPicks && (
+        <View style={styles.topPicksSection}>
+          <Text style={styles.topPicksHeader}>TOP PICKS FOR YOU</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.topPicksScroll}
+          >
+            {topPicks.map(event => (
+              <TopPickCard
+                key={event.id}
+                event={event}
+                onViewOnMap={() => handleViewOnMap(event)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* ── Main list ───────────────────────────────────────────────── */}
       {!loading && !error && (
         <FlatList
-          data={filtered}
+          data={sorted}
           keyExtractor={item => String(item.id)}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -157,12 +254,29 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
 
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 4,
   },
   headerTitle: { fontSize: 28, fontWeight: '700', color: INK },
   headerSub:   { fontSize: 13, color: SLATE, marginTop: 2 },
+
+  sortBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1.5,
+    borderColor: SCOPE_BLUE,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  sortBtnActive:    { backgroundColor: SCOPE_BLUE },
+  sortBtnText:      { fontSize: 12, fontWeight: '600', color: SCOPE_BLUE },
+  sortBtnTextActive:{ color: '#fff' },
 
   searchRow: {
     flexDirection: 'row',
@@ -182,12 +296,62 @@ const styles = StyleSheet.create({
   searchIcon:  { marginRight: 8 },
   searchInput: { flex: 1, fontSize: 15, color: INK },
 
-  listContent: { paddingHorizontal: 16, paddingBottom: 24 },
+  // ── Top Picks ─────────────────────────────────────────────────────────
+  topPicksSection: { marginBottom: 4 },
+  topPicksHeader: {
+    fontSize: 11, fontWeight: '700', color: SLATE,
+    letterSpacing: 0.8, textTransform: 'uppercase',
+    marginLeft: 20, marginBottom: 10,
+  },
+  topPicksScroll: { paddingHorizontal: 16, gap: 12 },
+
+  topPickCard: {
+    width: 220,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  topPickBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderLeftWidth: 3,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  topPickBannerText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  topPickBody:       { padding: 12 },
+  topPickTitle:      { fontSize: 14, fontWeight: '600', color: INK, lineHeight: 19, marginBottom: 8 },
+  topPickMeta:       { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 },
+  topPickMetaText:   { fontSize: 11, color: SLATE, flex: 1 },
+  topPickMapBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 8, backgroundColor: SCOPE_BLUE + '12',
+  },
+  topPickMapBtnText: { fontSize: 11, fontWeight: '600', color: SCOPE_BLUE },
+
+  scorePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3,
+  },
+  scorePillText: { fontSize: 10, fontWeight: '700' },
+
+  // ── Main list ─────────────────────────────────────────────────────────
+  listContent: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 4 },
 
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -195,6 +359,22 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+
+  categoryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    marginHorizontal: -16,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  categoryBannerText: {
+    fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase',
+  },
+
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',

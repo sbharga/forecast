@@ -5,3 +5,4 @@ requests>=2.31.0
 thefuzz[speedup]>=0.22.0
 feedparser>=6.0.0
 discord.py
+google-genai

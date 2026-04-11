@@ -141,4 +141,5 @@ async def set_events_channel(interaction: discord.Interaction, channel: discord.
     await interaction.response.send_message(f"Events channel set to {channel.mention}", ephemeral=True)
 
 
-bot.run(os.environ.get("DISCORD_BOT_TOKEN", ""))
+if __name__ == "__main__":
+    bot.run(os.environ.get("DISCORD_BOT_TOKEN", ""))

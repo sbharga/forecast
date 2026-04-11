@@ -96,4 +96,7 @@ def get_upcoming_events() -> List[Dict[str, Any]]:
             ORDER  BY start_time
             """
         )
-        return [dict(row) for row in cur.fetchall()]
+        return [
+            {**dict(row), "start_time": row["start_time"].isoformat()}
+            for row in cur.fetchall()
+        ]

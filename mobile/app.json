@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Scope",
+    "slug": "scope",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E21833"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "edu.umd.scope",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Scope uses your location to show nearby campus events."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E21833"
+      },
+      "package": "edu.umd.scope",
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      ]
+    ]
+  }
+}

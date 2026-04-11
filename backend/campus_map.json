@@ -1,0 +1,15 @@
+{
+  "buildings": [
+    {
+      "building_id": "0384",
+      "code": "IRB",
+      "name": "Brendan Iribe Center for Computer Science and Engineering",
+      "lat": 38.9891,
+      "lng": -76.9364,
+      "address": "8125 Paint Branch Dr, College Park, MD 20742",
+      "url": "https://umd.io/buildings/IRB"
+    }
+  ],
+  "source": "umd.io",
+  "last_updated": "2026-04-11"
+}

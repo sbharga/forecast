@@ -9,8 +9,7 @@ import os
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Any, Dict, List
-
+from typing import Any, Dict, List, Optional
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "scope.db")
 
 
@@ -58,6 +57,14 @@ def init_db() -> None:
         )
         cur.execute(
             "CREATE INDEX IF NOT EXISTS events_start_time_idx ON events (start_time)"
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guild_settings (
+                guild_id          INTEGER PRIMARY KEY,
+                events_channel_id INTEGER NOT NULL
+            )
+            """
         )
 
 
@@ -127,3 +134,30 @@ def get_upcoming_events() -> List[Dict[str, Any]]:
         except ValueError:
             result.append(r)  # include if unparseable rather than silently drop
     return result
+
+
+# ── Guild Settings ─────────────────────────────────────────────────────────
+
+def set_events_channel(guild_id: int, channel_id: int) -> None:
+    """Set the target events channel for a given guild."""
+    with _cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO guild_settings (guild_id, events_channel_id)
+            VALUES (?, ?)
+            ON CONFLICT(guild_id) DO UPDATE SET
+                events_channel_id = excluded.events_channel_id
+            """,
+            (guild_id, channel_id),
+        )
+
+
+def get_events_channel(guild_id: int) -> Optional[int]:
+    """Get the target events channel for a given guild. Returns None if not set."""
+    with _cursor() as cur:
+        cur.execute(
+            "SELECT events_channel_id FROM guild_settings WHERE guild_id = ?",
+            (guild_id,),
+        )
+        row = cur.fetchone()
+        return row["events_channel_id"] if row else None

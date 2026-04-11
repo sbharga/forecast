@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE INDEX IF NOT EXISTS events_start_time_idx ON events (start_time);
+
+CREATE TABLE IF NOT EXISTS guild_settings (
+    guild_id          INTEGER PRIMARY KEY,
+    events_channel_id INTEGER NOT NULL
+);

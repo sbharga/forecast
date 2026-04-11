@@ -1,66 +1,115 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  SafeAreaView,
+  Linking,
+  Modal,
   Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { MapPin, Calendar, ExternalLink } from 'lucide-react-native';
+import { Calendar, ExternalLink, MapPin, Navigation, X } from 'lucide-react-native';
+import * as Location from 'expo-location';
 
-// ─── Config ────────────────────────────────────────────────────────────────
-// For Expo Go on a physical device replace localhost with your machine's
-// local IP address, e.g. "http://192.168.1.42:8000/api/events"
-const EVENTS_URL = 'http://localhost:8000/api/events';
+// ─── API Config ────────────────────────────────────────────────────────────
+// Physical device: replace localhost with your machine's local IP, e.g.
+//   "http://192.168.1.42:8000"
+// Find your IP with: ipconfig getifaddr en0 (macOS) or ipconfig (Windows)
+const API_BASE_URL = 'http://10.173.67.106:8000';
 
-// UMD campus center
-const UMD_REGION = {
-  latitude: 38.9869,
-  longitude: -76.9426,
-  latitudeDelta: 0.018,
-  longitudeDelta: 0.018,
+// ─── Map ───────────────────────────────────────────────────────────────────
+const IRIBE_REGION = {
+  latitude: 38.9891,
+  longitude: -76.9364,
+  latitudeDelta: 0.012,
+  longitudeDelta: 0.012,
 };
 
-// UMD Red — used as accent colour throughout
-const UMD_RED = '#E21833';
+// ─── Theme ─────────────────────────────────────────────────────────────────
+const SCOPE_BLUE = '#1A56DB';
+const UMD_RED    = '#E21833';
+const INK        = '#0F172A';
+const SLATE      = '#64748B';
+const SURFACE    = '#F1F5F9';
 
-// Generate a label for each date button in the slider
+// ─── Google Maps — minimal/modern style (Android only) ────────────────────
+const MAP_STYLE = [
+  { elementType: 'geometry',            stylers: [{ color: '#f5f5f5' }] },
+  { elementType: 'labels.icon',         stylers: [{ visibility: 'off' }] },
+  { elementType: 'labels.text.fill',    stylers: [{ color: '#616161' }] },
+  { elementType: 'labels.text.stroke',  stylers: [{ color: '#f5f5f5' }] },
+  { featureType: 'poi',        elementType: 'geometry',         stylers: [{ color: '#eeeeee' }] },
+  { featureType: 'poi.park',   elementType: 'geometry',         stylers: [{ color: '#e5f5e0' }] },
+  { featureType: 'road',       elementType: 'geometry',         stylers: [{ color: '#ffffff' }] },
+  { featureType: 'road.highway', elementType: 'geometry',       stylers: [{ color: '#dadada' }] },
+  { featureType: 'transit.line', elementType: 'geometry',       stylers: [{ color: '#e5e5e5' }] },
+  { featureType: 'water',      elementType: 'geometry',         stylers: [{ color: '#c9e5f5' }] },
+  { featureType: 'water',      elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
+];
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
 function buildDateSlider(days = 7) {
-  const labels = [];
-  const today = new Date();
+  const result = [];
+  const today  = new Date();
   for (let i = 0; i < days; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    labels.push({
-      key: d.toISOString().split('T')[0],
-      label: i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+    result.push({
+      key:     d.toISOString().split('T')[0],
+      weekday: i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' }),
+      day:     d.getDate(),
     });
   }
-  return labels;
+  return result;
 }
 
+function relativeTime(isoString) {
+  const diffMs  = new Date(isoString).getTime() - Date.now();
+  const diffMin = Math.round(diffMs / 60_000);
+  if (diffMin < 0)             return 'Started';
+  if (diffMin < 60)            return `Starts in ${diffMin}m`;
+  const hrs = Math.floor(diffMin / 60);
+  if (hrs < 24)                return `Starts in ${hrs}h`;
+  return `Starts in ${Math.floor(hrs / 24)}d`;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────
+const DATE_SLIDER = buildDateSlider(7);
+
 export default function App() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(buildDateSlider()[0].key);
+  const mapRef = useRef(null);
 
-  const dateSlider = buildDateSlider(7);
+  const [events,        setEvents]        = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState(null);
+  const [selectedDate,  setSelectedDate]  = useState(DATE_SLIDER[0].key);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // ── Fetch events from the FastAPI backend ──────────────────────────────
+  // ── Location permission ───────────────────────────────────────────────
+  useEffect(() => {
+    Location.requestForegroundPermissionsAsync().catch(() => {
+      // Permission denied — showsUserLocation will simply not render the dot
+    });
+  }, []);
+
+  // ── Fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(EVENTS_URL);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(`${API_BASE_URL}/api/events`);
+        if (!res.ok) throw new Error(`Backend error: HTTP ${res.status}`);
         const data = await res.json();
         setEvents(data);
+        console.log(`Scope: loaded ${data.length} events`);
       } catch (err) {
-        console.warn('Failed to fetch events:', err.message);
+        // "Network request failed" = phone can't reach backend IP
+        // "Backend error: HTTP 502" = backend couldn't reach TerpLink
+        console.warn('Scope: fetch failed —', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -68,203 +117,387 @@ export default function App() {
     })();
   }, []);
 
-  // ── Filter events by selected date ────────────────────────────────────
-  const visibleEvents = events.filter(
-    (e) => e.start_time.startsWith(selectedDate)
-  );
+  // ── Derived state ─────────────────────────────────────────────────────
+  const filteredEvents = events.filter(e => e.start_time.startsWith(selectedDate));
 
+  // ── Handlers ──────────────────────────────────────────────────────────
+  function centerOnCampus() {
+    mapRef.current?.animateToRegion(IRIBE_REGION, 450);
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.container}>
-      {/* ── Map ──────────────────────────────────────────────────────── */}
+    <SafeAreaProvider>
+    <View style={styles.root}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+
+      {/* ── Full-screen map ─────────────────────────────────────────── */}
       <MapView
-        style={styles.map}
+        ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        initialRegion={UMD_REGION}
+        customMapStyle={Platform.OS === 'android' ? MAP_STYLE : undefined}
+        initialRegion={IRIBE_REGION}
         showsUserLocation
-        showsMyLocationButton
+        showsMyLocationButton={false}
+        showsCompass={false}
+        toolbarEnabled={false}
       >
-        {visibleEvents.map((event) => (
+        {filteredEvents.map(event => (
           <Marker
             key={event.id}
             coordinate={{ latitude: event.lat, longitude: event.lng }}
-            title={event.title}
-            description={event.start_time}
-            pinColor={UMD_RED}
-          />
+            onPress={() => setSelectedEvent(event)}
+            tracksViewChanges={false}
+          >
+            {/* Custom blue pin bubble */}
+            <View style={styles.markerBubble}>
+              <MapPin size={14} color="#fff" />
+            </View>
+          </Marker>
         ))}
       </MapView>
 
-      {/* ── Bottom Sheet ─────────────────────────────────────────────── */}
-      <View style={styles.bottomSheet}>
-        {/* Date Slider — "Weather Scroll UI" */}
+      {/* ── FAB — center on campus ──────────────────────────────────── */}
+      <SafeAreaView pointerEvents="box-none" style={styles.fabContainer}>
+        <TouchableOpacity style={styles.fab} onPress={centerOnCampus} activeOpacity={0.85}>
+          <Navigation size={20} color="#fff" />
+        </TouchableOpacity>
+      </SafeAreaView>
+
+      {/* ── Date slider (Weather Scroll) ────────────────────────────── */}
+      <View style={styles.sliderContainer}>
+        {/* Status line above pills */}
+        {loading && <Text style={styles.statusLabel}>Loading events…</Text>}
+        {error   && <Text style={styles.errorLabel}>⚠ Could not load events</Text>}
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.sliderContent}
-          style={styles.dateSlider}
         >
-          {dateSlider.map((item) => {
+          {DATE_SLIDER.map(item => {
             const active = item.key === selectedDate;
+            const count  = events.filter(e => e.start_time.startsWith(item.key)).length;
             return (
               <TouchableOpacity
                 key={item.key}
                 onPress={() => setSelectedDate(item.key)}
                 style={[styles.datePill, active && styles.datePillActive]}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <Calendar
-                  size={13}
-                  color={active ? '#fff' : UMD_RED}
-                  style={styles.pillIcon}
-                />
-                <Text style={[styles.datePillText, active && styles.datePillTextActive]}>
-                  {item.label}
+                <Text style={[styles.pillWeekday, active && styles.pillLabelActive]}>
+                  {item.weekday}
                 </Text>
+                <Text style={[styles.pillDay, active && styles.pillLabelActive]}>
+                  {item.day}
+                </Text>
+                {count > 0 && (
+                  <View style={[styles.pillBadge, active && styles.pillBadgeActive]}>
+                    <Text style={[styles.pillBadgeText, active && styles.pillBadgeTextActive]}>
+                      {count}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* Event List */}
-        {loading ? (
-          <ActivityIndicator color={UMD_RED} style={{ marginTop: 16 }} />
-        ) : error ? (
-          <Text style={styles.errorText}>Could not load events: {error}</Text>
-        ) : visibleEvents.length === 0 ? (
-          <Text style={styles.emptyText}>No events on this day.</Text>
-        ) : (
-          <ScrollView style={styles.eventList} showsVerticalScrollIndicator={false}>
-            {visibleEvents.map((event) => (
-              <View key={event.id} style={styles.eventCard}>
-                <View style={styles.eventCardLeft}>
-                  <MapPin size={16} color={UMD_RED} />
-                </View>
-                <View style={styles.eventCardBody}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventTime}>
-                    {new Date(event.start_time).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.eventLinkBtn}>
-                  <ExternalLink size={16} color="#888" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
+        {!loading && !error && filteredEvents.length === 0 && (
+          <Text style={styles.emptyLabel}>No events on this day</Text>
         )}
       </View>
-    </SafeAreaView>
+
+      {/* ── Event detail modal (bottom sheet) ──────────────────────── */}
+      <Modal
+        visible={!!selectedEvent}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedEvent(null)}
+      >
+        {/* Dim backdrop — tap to dismiss */}
+        <TouchableWithoutFeedback onPress={() => setSelectedEvent(null)}>
+          <View style={styles.modalBackdrop} />
+        </TouchableWithoutFeedback>
+
+        {selectedEvent && (
+          <View style={styles.modalSheet}>
+            {/* Drag handle */}
+            <View style={styles.modalHandle} />
+
+            {/* Dismiss button */}
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setSelectedEvent(null)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <X size={18} color={SLATE} />
+            </TouchableOpacity>
+
+            {/* Relative-time badge */}
+            <View style={styles.relTimeBadge}>
+              <Calendar size={12} color={SCOPE_BLUE} />
+              <Text style={styles.relTimeBadgeText}>
+                {relativeTime(selectedEvent.start_time)}
+              </Text>
+            </View>
+
+            {/* Title */}
+            <Text style={styles.modalTitle} numberOfLines={3}>
+              {selectedEvent.title}
+            </Text>
+
+            {/* Location row */}
+            <View style={styles.modalRow}>
+              <MapPin size={14} color={SLATE} />
+              <Text style={styles.modalRowText} numberOfLines={1}>
+                {selectedEvent.location || 'UMD Campus'}
+              </Text>
+            </View>
+
+            {/* Full date + time */}
+            <View style={styles.modalRow}>
+              <Calendar size={14} color={SLATE} />
+              <Text style={styles.modalRowText}>
+                {new Date(selectedEvent.start_time).toLocaleDateString('en-US', {
+                  weekday: 'long', month: 'long', day: 'numeric',
+                })}
+                {'  ·  '}
+                {new Date(selectedEvent.start_time).toLocaleTimeString('en-US', {
+                  hour: 'numeric', minute: '2-digit',
+                })}
+              </Text>
+            </View>
+
+            {/* CTA */}
+            <TouchableOpacity
+              style={styles.ctaBtn}
+              onPress={() => Linking.openURL(selectedEvent.link).catch(() => {})}
+              activeOpacity={0.85}
+            >
+              <ExternalLink size={16} color="#fff" />
+              <Text style={styles.ctaBtnText}>View on TerpLink</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </Modal>
+    </View>
+    </SafeAreaProvider>
   );
 }
 
+// ─── Styles ────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  map: {
-    flex: 1,
   },
 
-  // ── Bottom sheet ──────────────────────────────────────────────────────
-  bottomSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-    // Subtle shadow
+  // ── Custom marker ────────────────────────────────────────────────────────
+  markerBubble: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: SCOPE_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Glow shadow
+    shadowColor: SCOPE_BLUE,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.45,
+    shadowRadius: 5,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+
+  // ── FAB ──────────────────────────────────────────────────────────────────
+  fabContainer: {
+    position: 'absolute',
+    right: 16,
+    bottom: 200,       // sits comfortably above the slider card
+  },
+  fab: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: SCOPE_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
     elevation: 8,
-    maxHeight: '40%',
   },
 
-  // ── Date slider ───────────────────────────────────────────────────────
-  dateSlider: {
-    flexGrow: 0,
+  // ── Date slider ──────────────────────────────────────────────────────────
+  sliderContainer: {
+    position: 'absolute',
+    bottom: 32,
+    left: 12,
+    right: 12,
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    paddingTop: 14,
+    paddingBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.13,
+    shadowRadius: 16,
+    elevation: 10,
   },
   sliderContent: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: 14,
   },
   datePill: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: UMD_RED,
-    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: SURFACE,
     marginRight: 8,
+    minWidth: 56,
   },
   datePillActive: {
-    backgroundColor: UMD_RED,
+    backgroundColor: SCOPE_BLUE,
   },
-  pillIcon: {
-    marginRight: 4,
-  },
-  datePillText: {
-    fontSize: 13,
+  pillWeekday: {
+    fontSize: 10,
     fontWeight: '600',
-    color: UMD_RED,
+    color: SLATE,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
-  datePillTextActive: {
+  pillDay: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: INK,
+    marginTop: 1,
+  },
+  pillLabelActive: {
     color: '#fff',
   },
-
-  // ── Event cards ───────────────────────────────────────────────────────
-  eventList: {
-    marginTop: 10,
-    paddingHorizontal: 16,
+  pillBadge: {
+    marginTop: 4,
+    backgroundColor: UMD_RED + '22',
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
   },
-  eventCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+  pillBadgeActive: {
+    backgroundColor: 'rgba(255,255,255,0.28)',
   },
-  eventCardLeft: {
-    width: 32,
-    alignItems: 'center',
+  pillBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: UMD_RED,
   },
-  eventCardBody: {
-    flex: 1,
-    marginLeft: 8,
+  pillBadgeTextActive: {
+    color: '#fff',
   },
-  eventTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111',
-  },
-  eventTime: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  eventLinkBtn: {
-    padding: 6,
-  },
-
-  // ── States ────────────────────────────────────────────────────────────
-  emptyText: {
+  statusLabel: {
     textAlign: 'center',
-    color: '#999',
-    marginTop: 20,
-    fontSize: 14,
+    color: SLATE,
+    fontSize: 12,
+    marginBottom: 8,
   },
-  errorText: {
+  errorLabel: {
     textAlign: 'center',
     color: UMD_RED,
-    marginTop: 20,
-    fontSize: 13,
+    fontSize: 12,
+    marginBottom: 8,
     paddingHorizontal: 16,
+  },
+  emptyLabel: {
+    textAlign: 'center',
+    color: SLATE,
+    fontSize: 13,
+    marginTop: 10,
+  },
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.4)',
+  },
+  modalSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 20,
+    elevation: 14,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E2E8F0',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    top: 18,
+    right: 20,
+    padding: 6,
+  },
+  relTimeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: SCOPE_BLUE + '18',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  relTimeBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: SCOPE_BLUE,
+  },
+  modalTitle: {
+    fontSize: 21,
+    fontWeight: '700',
+    color: INK,
+    lineHeight: 28,
+    marginBottom: 14,
+  },
+  modalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  modalRowText: {
+    flex: 1,
+    fontSize: 14,
+    color: SLATE,
+    lineHeight: 20,
+  },
+  ctaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 20,
+    backgroundColor: SCOPE_BLUE,
+    borderRadius: 16,
+    paddingVertical: 16,
+  },
+  ctaBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.2,
   },
 });

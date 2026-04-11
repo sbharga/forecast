@@ -1,15 +1,2107 @@
-{
-  "buildings": [
-    {
-      "building_id": "0384",
-      "code": "IRB",
-      "name": "Brendan Iribe Center for Computer Science and Engineering",
-      "lat": 38.9891,
-      "lng": -76.9364,
-      "address": "8125 Paint Branch Dr, College Park, MD 20742",
-      "url": "https://umd.io/buildings/IRB"
-    }
-  ],
-  "source": "umd.io",
-  "last_updated": "2026-04-11"
-}
+[
+  {
+    "name": "Pyon-Chen Hall (Residence Hall)",
+    "lat": 38.992006368432,
+    "lng": -76.9450130082911
+  },
+  {
+    "name": "Brendan Iribe Center",
+    "lat": 38.9891607057353,
+    "lng": -76.9364438800535
+  },
+  {
+    "name": "E.A. Fernandez IDEA Factory",
+    "lat": 38.9903479373045,
+    "lng": -76.9380368584742
+  },
+  {
+    "name": "Johnson-Whittle Hall (Residence Hall)",
+    "lat": 38.9910437507671,
+    "lng": -76.9455661550643
+  },
+  {
+    "name": "Yahentamitsi",
+    "lat": 38.9910741490181,
+    "lng": -76.9446146376707
+  },
+  {
+    "name": "School of Public Policy",
+    "lat": 38.985207,
+    "lng": -76.938516
+  },
+  {
+    "name": "251 North",
+    "lat": 38.99274005,
+    "lng": -76.9496090325357
+  },
+  {
+    "name": "94th Aero Squadron",
+    "lat": 38.9781702,
+    "lng": -76.9210122711411
+  },
+  {
+    "name": "A Harvey Wiley Federal Building FDA",
+    "lat": 38.9770124,
+    "lng": -76.9261965846492
+  },
+  {
+    "name": "A. James Clark Hall",
+    "lat": 38.9919651,
+    "lng": -76.937262
+  },
+  {
+    "name": "A.V. Williams Building",
+    "lat": 38.99079905,
+    "lng": -76.9363418604721
+  },
+  {
+    "name": "Adele H. Stamp Student Union Buildings",
+    "lat": 38.98816455,
+    "lng": -76.9447218233957
+  },
+  {
+    "name": "Agriculture Shed",
+    "lat": 38.99198175,
+    "lng": -76.9407337234236
+  },
+  {
+    "name": "Allegany Hall (Residence Hall)",
+    "lat": 38.98157935,
+    "lng": -76.9414146
+  },
+  {
+    "name": "Alpha Chi Omega Sorority",
+    "lat": 38.9814223,
+    "lng": -76.9360293156412
+  },
+  {
+    "name": "Alpha Delta Pi Sorority",
+    "lat": 38.981239,
+    "lng": -76.9352079623363
+  },
+  {
+    "name": "Alpha Epsilon Phi Sorority",
+    "lat": 38.98324535,
+    "lng": -76.93562535
+  },
+  {
+    "name": "Alpha Epsilon Pi",
+    "lat": 38.9846571,
+    "lng": -76.9351584
+  },
+  {
+    "name": "Alpha Phi Sorority",
+    "lat": 38.9808974,
+    "lng": -76.9352442035259
+  },
+  {
+    "name": "Alpha Sigma Phi Fraternity",
+    "lat": 38.98329385,
+    "lng": -76.9346571906316
+  },
+  {
+    "name": "American Center for Physics",
+    "lat": 38.97152715,
+    "lng": -76.9299850652696
+  },
+  {
+    "name": "Animal Science Service Building",
+    "lat": 38.99200365,
+    "lng": -76.9410828738213
+  },
+  {
+    "name": "Animal Science/Agricultural Engineering Building",
+    "lat": 38.99164625,
+    "lng": -76.9394592785606
+  },
+  {
+    "name": "Annapolis Hall",
+    "lat": 38.9822303,
+    "lng": -76.9400675383842
+  },
+  {
+    "name": "Anne Arundel Hall",
+    "lat": 38.98595025,
+    "lng": -76.94673185
+  },
+  {
+    "name": "Apiary",
+    "lat": 38.99193245,
+    "lng": -76.9487330028218
+  },
+  {
+    "name": "Aquatics Center",
+    "lat": 38.9933884,
+    "lng": -76.9464978414166
+  },
+  {
+    "name": "Architecture Building",
+    "lat": 38.98423555,
+    "lng": -76.9475462198212
+  },
+  {
+    "name": "Art-Sociology Building",
+    "lat": 38.98528145,
+    "lng": -76.9478947752967
+  },
+  {
+    "name": "Baltimore Hall (Residence Hall)",
+    "lat": 38.9822469,
+    "lng": -76.9421925409139
+  },
+  {
+    "name": "Bel Air Hall (Residence Hall)",
+    "lat": 38.99281705,
+    "lng": -76.9426116
+  },
+  {
+    "name": "Benjamin Building",
+    "lat": 38.9867095,
+    "lng": -76.9474215
+  },
+  {
+    "name": "Biology-Psychology Building",
+    "lat": 38.98872265,
+    "lng": -76.9425929312518
+  },
+  {
+    "name": "Biomolecular Sciences Building",
+    "lat": 38.99285415,
+    "lng": -76.9376944355845
+  },
+  {
+    "name": "Biosciences Research Building",
+    "lat": 38.98897595,
+    "lng": -76.9428094130756
+  },
+  {
+    "name": "Blacksmith Shop",
+    "lat": 38.9922976,
+    "lng": -76.94089305
+  },
+  {
+    "name": "Building Services Operations Building",
+    "lat": 38.98626085,
+    "lng": -76.9346037302467
+  },
+  {
+    "name": "Byrd Stadium",
+    "lat": 38.99033895,
+    "lng": -76.9475181930938
+  },
+  {
+    "name": "Byrd Stadium Maintenance Building",
+    "lat": 38.99025255,
+    "lng": -76.9458711262378
+  },
+  {
+    "name": "Calvert Hall (Residence Hall)",
+    "lat": 38.98292125,
+    "lng": -76.9423134911421
+  },
+  {
+    "name": "Cambridge Community Center",
+    "lat": 38.99217805,
+    "lng": -76.9429981
+  },
+  {
+    "name": "Cambridge Hall (Residence Hall)",
+    "lat": 38.99172105,
+    "lng": -76.9430174173239
+  },
+  {
+    "name": "Caroline Hall (Residence Hall)",
+    "lat": 38.9834966,
+    "lng": -76.9457925
+  },
+  {
+    "name": "Caroll Hall (Residence Hall)",
+    "lat": 38.9839834,
+    "lng": -76.9456253332123
+  },
+  {
+    "name": "Catholic Student Center",
+    "lat": 38.98056895,
+    "lng": -76.9450898077953
+  },
+  {
+    "name": "Cattle Barn",
+    "lat": 38.9923982,
+    "lng": -76.9403740849109
+  },
+  {
+    "name": "Cecil Hall",
+    "lat": 38.9829463,
+    "lng": -76.9416573737624
+  },
+  {
+    "name": "Center for the Advanced Study of Language",
+    "lat": 38.9741989,
+    "lng": -76.9256352793971
+  },
+  {
+    "name": "Center for Young Children",
+    "lat": 38.99352845,
+    "lng": -76.9484830471325
+  },
+  {
+    "name": "Central Animal Resources Facility",
+    "lat": 38.9917051,
+    "lng": -76.9383409902712
+  },
+  {
+    "name": "Centreville Hall (Residence Hall)",
+    "lat": 38.992271,
+    "lng": -76.9421248952804
+  },
+  {
+    "name": "Chabad Jewish Student Center",
+    "lat": 38.9803053,
+    "lng": -76.9332465412442
+  },
+  {
+    "name": "Challenge Course",
+    "lat": 38.99415265,
+    "lng": -76.9452623440046
+  },
+  {
+    "name": "Chapel Fields",
+    "lat": 38.9837497,
+    "lng": -76.9389471052562
+  },
+  {
+    "name": "Charles Hall (Residence Hall)",
+    "lat": 38.9816226,
+    "lng": -76.9405193937813
+  },
+  {
+    "name": "Chemical and Nuclear Engineering Building",
+    "lat": 38.99060895,
+    "lng": -76.9395374654513
+  },
+  {
+    "name": "Chemistry Building",
+    "lat": 38.98959475,
+    "lng": -76.940171718657
+  },
+  {
+    "name": "Chesapeake Building",
+    "lat": 38.99828345,
+    "lng": -76.94215145
+  },
+  {
+    "name": "Chestertown Hall (Residence Hall)",
+    "lat": 38.99280355,
+    "lng": -76.9434348
+  },
+  {
+    "name": "Chincoteague Hall",
+    "lat": 38.9852322,
+    "lng": -76.9445192324004
+  },
+  {
+    "name": "Clarice Smith Performing Arts Center",
+    "lat": 38.9906807,
+    "lng": -76.9504434053224
+  },
+  {
+    "name": "Climbing Wall",
+    "lat": 38.99419435,
+    "lng": -76.9458984242081
+  },
+  {
+    "name": "Cole Student Activities Building",
+    "lat": 38.98797155,
+    "lng": -76.9467662555511
+  },
+  {
+    "name": "College Park Fire Station",
+    "lat": 38.9903857,
+    "lng": -76.9336943536548
+  },
+  {
+    "name": "College Park LDS Institute of Religion",
+    "lat": 38.981888,
+    "lng": -76.9474186908036
+  },
+  {
+    "name": "College Park Metro Station",
+    "lat": 38.97825115,
+    "lng": -76.9280071656932
+  },
+  {
+    "name": "Comcast Center",
+    "lat": 38.9956305,
+    "lng": -76.9413366066757
+  },
+  {
+    "name": "Computer and Space Sciences Building",
+    "lat": 38.9909812,
+    "lng": -76.9425669540912
+  },
+  {
+    "name": "Computer Science Instructional Center",
+    "lat": 38.98999465,
+    "lng": -76.9361946
+  },
+  {
+    "name": "Cumberland Hall (Residence Hall)",
+    "lat": 38.9922614,
+    "lng": -76.9439244117559
+  },
+  {
+    "name": "Delta Chi Fraternity",
+    "lat": 38.98432725,
+    "lng": -76.9341748748757
+  },
+  {
+    "name": "Delta Gamma Sorority",
+    "lat": 38.9805908,
+    "lng": -76.9354323628479
+  },
+  {
+    "name": "Delta Phi Epsilon Sorority",
+    "lat": 38.9807542,
+    "lng": -76.9363517104313
+  },
+  {
+    "name": "Denton Hall (Residence Hall)",
+    "lat": 38.99223865,
+    "lng": -76.9499786106729
+  },
+  {
+    "name": "Dorchester Hall (Residence Hall)",
+    "lat": 38.9867742,
+    "lng": -76.9461812019092
+  },
+  {
+    "name": "DOTS Impound",
+    "lat": 38.98291445,
+    "lng": -76.931625967854
+  },
+  {
+    "name": "Easton Hall (Residence Hall)",
+    "lat": 38.9930193,
+    "lng": -76.9502564099265
+  },
+  {
+    "name": "Edward St. John Learning and Teaching Center",
+    "lat": 38.986699,
+    "lng": -76.941914
+  },
+  {
+    "name": "Elkton Hall (Residence Hall)",
+    "lat": 38.9925108,
+    "lng": -76.9489576649778
+  },
+  {
+    "name": "Ellicott Hall (Residence Hall)",
+    "lat": 38.9918228,
+    "lng": -76.9466586443134
+  },
+  {
+    "name": "Energy Plant",
+    "lat": 38.98585305,
+    "lng": -76.935683449548
+  },
+  {
+    "name": "Energy Research Facility",
+    "lat": 38.99192655,
+    "lng": -76.936862109123
+  },
+  {
+    "name": "Engineering Annex",
+    "lat": 38.99073865,
+    "lng": -76.9370872500394
+  },
+  {
+    "name": "Engineering Fields",
+    "lat": 38.98753725,
+    "lng": -76.9375298581359
+  },
+  {
+    "name": "Engineering Laboratory Building",
+    "lat": 38.98926235,
+    "lng": -76.9379467111811
+  },
+  {
+    "name": "Environmental Services Facility",
+    "lat": 38.9965269,
+    "lng": -76.9437334181758
+  },
+  {
+    "name": "Episcopal Student Center",
+    "lat": 38.9820118,
+    "lng": -76.9358864728133
+  },
+  {
+    "name": "Eppley Campus Recreation Center",
+    "lat": 38.99358165,
+    "lng": -76.9452703132821
+  },
+  {
+    "name": "Field Hockey and Lacrosse Complex",
+    "lat": 38.99472745,
+    "lng": -76.9368614977832
+  },
+  {
+    "name": "Francis Scott Key Hall",
+    "lat": 38.98506175,
+    "lng": -76.9430892753028
+  },
+  {
+    "name": "Fraternity Fields",
+    "lat": 38.9839311,
+    "lng": -76.9358798758218
+  },
+  {
+    "name": "Frederick Hall (Residence Hall)",
+    "lat": 38.98204525,
+    "lng": -76.9407467785094
+  },
+  {
+    "name": "Garrett Hall (Residence Hall)",
+    "lat": 38.98323575,
+    "lng": -76.9426804
+  },
+  {
+    "name": "Gate House",
+    "lat": 38.98864785,
+    "lng": -76.9357643250823
+  },
+  {
+    "name": "Geology Building",
+    "lat": 38.9881304,
+    "lng": -76.9409099576973
+  },
+  {
+    "name": "Golf Course Clubhouse",
+    "lat": 38.99113325,
+    "lng": -76.9547070820405
+  },
+  {
+    "name": "Golf Course Maintenance",
+    "lat": 38.9973127,
+    "lng": -76.9531787893985
+  },
+  {
+    "name": "Golub Property",
+    "lat": 38.96954285,
+    "lng": -76.9301602208332
+  },
+  {
+    "name": "Gossett Football Team House",
+    "lat": 38.98978335,
+    "lng": -76.9462999828512
+  },
+  {
+    "name": "Graduate Garden Apartment Complex",
+    "lat": 38.9845594,
+    "lng": -76.9573161915849
+  },
+  {
+    "name": "Ground Herbicide/Pesticide Storage Building",
+    "lat": 38.9956043,
+    "lng": -76.94380855
+  },
+  {
+    "name": "Grounds Material and Equipment Building",
+    "lat": 38.99561845,
+    "lng": -76.94330185
+  },
+  {
+    "name": "Grounds Office Building",
+    "lat": 38.99586895,
+    "lng": -76.9437121
+  },
+  {
+    "name": "Grounds Operations and Maintenance Facility",
+    "lat": 38.9955292,
+    "lng": -76.9428899
+  },
+  {
+    "name": "H.J. Patterson Hall",
+    "lat": 38.98708535,
+    "lng": -76.9432766035148
+  },
+  {
+    "name": "Hagerstown Hall (Residence Hall)",
+    "lat": 38.9924384,
+    "lng": -76.9474136961276
+  },
+  {
+    "name": "Harford Hall (Residence Hall)",
+    "lat": 38.9824913,
+    "lng": -76.9408308448032
+  },
+  {
+    "name": "Harrison Lab",
+    "lat": 38.98703195,
+    "lng": -76.9356386027744
+  },
+  {
+    "name": "Health Center",
+    "lat": 38.9872158,
+    "lng": -76.9447460619769
+  },
+  {
+    "name": "Heavy Equipment Building",
+    "lat": 38.98591735,
+    "lng": -76.9338248720072
+  },
+  {
+    "name": "Herbert Wells Ice Rink",
+    "lat": 38.97594655,
+    "lng": -76.923644
+  },
+  {
+    "name": "Holzapfel Hall (Horticulture)",
+    "lat": 38.98687755,
+    "lng": -76.9418893729789
+  },
+  {
+    "name": "Hope Lutheran Church",
+    "lat": 38.98023825,
+    "lng": -76.9440416856427
+  },
+  {
+    "name": "Hornbake Library",
+    "lat": 38.9881767,
+    "lng": -76.9415740921482
+  },
+  {
+    "name": "Horse Barn",
+    "lat": 38.9916839,
+    "lng": -76.9408036631471
+  },
+  {
+    "name": "Howard Hall (Residence Hall)",
+    "lat": 38.98196065,
+    "lng": -76.9419727992265
+  },
+  {
+    "name": "HVAC Building",
+    "lat": 38.9883195,
+    "lng": -76.9437313
+  },
+  {
+    "name": "Indoor Practice Facility",
+    "lat": 38.9896622,
+    "lng": -76.9543808895367
+  },
+  {
+    "name": "Institute for Physical Science and Technology",
+    "lat": 38.9909191,
+    "lng": -76.94097235
+  },
+  {
+    "name": "Institute for Physical Science and Technology Storage",
+    "lat": 38.9908276,
+    "lng": -76.941282950122
+  },
+  {
+    "name": "Instructional Television Facility",
+    "lat": 38.98957525,
+    "lng": -76.9383093000325
+  },
+  {
+    "name": "J. Logan and Louise Schutz Football Practice Complex",
+    "lat": 38.9902169,
+    "lng": -76.9441988
+  },
+  {
+    "name": "J.H. Kehoe Track and Ludwig Field",
+    "lat": 38.9878761,
+    "lng": -76.9505711919375
+  },
+  {
+    "name": "J.M. Patterson Building",
+    "lat": 38.9905177,
+    "lng": -76.940295409728
+  },
+  {
+    "name": "Jeong H. Kim Engineering Building",
+    "lat": 38.9909099,
+    "lng": -76.938025589911
+  },
+  {
+    "name": "Jimenez Hall",
+    "lat": 38.9867867,
+    "lng": -76.94455005
+  },
+  {
+    "name": "Jull Hall",
+    "lat": 38.99087705,
+    "lng": -76.9435848
+  },
+  {
+    "name": "Kappa Alpha Fraternity",
+    "lat": 38.98468565,
+    "lng": -76.936671546034
+  },
+  {
+    "name": "Kent Hall (Residence Hall)",
+    "lat": 38.98324525,
+    "lng": -76.9418433747954
+  },
+  {
+    "name": "Knight Hall",
+    "lat": 38.98677255,
+    "lng": -76.9484189
+  },
+  {
+    "name": "Laboratory for Physical Sciences",
+    "lat": 39.00369935,
+    "lng": -76.9439779039198
+  },
+  {
+    "name": "Laboratory for Telecommunications Sciences",
+    "lat": 39.00494075,
+    "lng": -76.943618302473
+  },
+  {
+    "name": "Lamda Chi Alpha Fraternity",
+    "lat": 38.98394255,
+    "lng": -76.9340275582429
+  },
+  {
+    "name": "LaPlata Beach",
+    "lat": 38.9925556,
+    "lng": -76.9449878688894
+  },
+  {
+    "name": "LaPlata Hall (Residence Hall)",
+    "lat": 38.9924497,
+    "lng": -76.9458907104711
+  },
+  {
+    "name": "LEAFHouse",
+    "lat": 38.9996436,
+    "lng": -76.9413782929899
+  },
+  {
+    "name": "Lee Building",
+    "lat": 38.9853629,
+    "lng": -76.9395264
+  },
+  {
+    "name": "LeFrak Hall",
+    "lat": 38.9836849,
+    "lng": -76.9436347921034
+  },
+  {
+    "name": "Leonardtown Community Center",
+    "lat": 38.9833564,
+    "lng": -76.9334623293913
+  },
+  {
+    "name": "Leonardtown Housing",
+    "lat": 38.98288495,
+    "lng": -76.9329720567893
+  },
+  {
+    "name": "Leonardtown Housing 12",
+    "lat": 38.98369045,
+    "lng": -76.933234970697
+  },
+  {
+    "name": "Leonardtown Housing1",
+    "lat": 38.98395015,
+    "lng": -76.9334063277435
+  },
+  {
+    "name": "Leonardtown Housing10",
+    "lat": 38.98259145,
+    "lng": -76.9328295569528
+  },
+  {
+    "name": "Leonardtown Housing12",
+    "lat": 38.9848148,
+    "lng": -76.9337842335381
+  },
+  {
+    "name": "Leonardtown Housing2",
+    "lat": 38.9826975,
+    "lng": -76.932084393545
+  },
+  {
+    "name": "Leonardtown Housing3",
+    "lat": 38.98369225,
+    "lng": -76.9332266219975
+  },
+  {
+    "name": "Leonardtown Housing4",
+    "lat": 38.9842544,
+    "lng": -76.9330952978623
+  },
+  {
+    "name": "Leonardtown Housing5",
+    "lat": 38.98432445,
+    "lng": -76.9335417977186
+  },
+  {
+    "name": "Leonardtown Housing6",
+    "lat": 38.9846063,
+    "lng": -76.9333959355818
+  },
+  {
+    "name": "Leonardtown Housing7",
+    "lat": 38.98295505,
+    "lng": -76.9320609074038
+  },
+  {
+    "name": "Leonardtown Housing8",
+    "lat": 38.98256985,
+    "lng": -76.9322669026445
+  },
+  {
+    "name": "Leonardtown Housing9",
+    "lat": 38.98269485,
+    "lng": -76.932593405223
+  },
+  {
+    "name": "Leonardtown Office Building",
+    "lat": 38.9837051,
+    "lng": -76.9324305637608
+  },
+  {
+    "name": "Lot",
+    "lat": 38.99133375,
+    "lng": -76.9466368038263
+  },
+  {
+    "name": "Main Administration Building",
+    "lat": 38.9860173,
+    "lng": -76.93980935
+  },
+  {
+    "name": "Manufacturing Building",
+    "lat": 38.99286495,
+    "lng": -76.9394357215756
+  },
+  {
+    "name": "Marie Mount Hall",
+    "lat": 38.9850013,
+    "lng": -76.94075799224
+  },
+  {
+    "name": "Martin Hall",
+    "lat": 38.9888688,
+    "lng": -76.9379744096244
+  },
+  {
+    "name": "Mathematics Building",
+    "lat": 38.98862265,
+    "lng": -76.9390688130666
+  },
+  {
+    "name": "McKeldin Library",
+    "lat": 38.98598155,
+    "lng": -76.9451004712142
+  },
+  {
+    "name": "McKeldin Mall",
+    "lat": 38.9859886,
+    "lng": -76.9422685216793
+  },
+  {
+    "name": "Memorial Chapel",
+    "lat": 38.98415015,
+    "lng": -76.9408661301378
+  },
+  {
+    "name": "Metro Parking Garage",
+    "lat": 38.97901515,
+    "lng": -76.9275380161511
+  },
+  {
+    "name": "MFRI Drill Tower",
+    "lat": 38.983559,
+    "lng": -76.9299067182804
+  },
+  {
+    "name": "MFRI Fire Extinguisher Training Facility",
+    "lat": 38.98401155,
+    "lng": -76.9287741861655
+  },
+  {
+    "name": "MFRI Office/Classroom Building",
+    "lat": 38.98332815,
+    "lng": -76.9288594688342
+  },
+  {
+    "name": "MFRI Structural Firefighting Building",
+    "lat": 38.98365305,
+    "lng": -76.928304153809
+  },
+  {
+    "name": "Microbiology Building",
+    "lat": 38.98811525,
+    "lng": -76.9434034376443
+  },
+  {
+    "name": "Mitchell Building",
+    "lat": 38.98670195,
+    "lng": -76.9395651325614
+  },
+  {
+    "name": "Montgomery Hall (Residence Hall)",
+    "lat": 38.9820505,
+    "lng": -76.9396753369829
+  },
+  {
+    "name": "Morrill Hall",
+    "lat": 38.9843126,
+    "lng": -76.944173786884
+  },
+  {
+    "name": "Motor Transportation Facility",
+    "lat": 38.98618425,
+    "lng": -76.9336288120943
+  },
+  {
+    "name": "Motorcycle Storage Building",
+    "lat": 38.98564745,
+    "lng": -76.9361307352417
+  },
+  {
+    "name": "Mowatt Lane Parking Garage",
+    "lat": 38.98182585,
+    "lng": -76.9455747840072
+  },
+  {
+    "name": "Mowatt Lane Substation",
+    "lat": 38.98371275,
+    "lng": -76.9477371
+  },
+  {
+    "name": "Neutral Buoyancy Research Facility",
+    "lat": 38.99288895,
+    "lng": -76.9389810221139
+  },
+  {
+    "name": "NOAA Center for Weather and Climate Prediction",
+    "lat": 38.97199165,
+    "lng": -76.9247140879834
+  },
+  {
+    "name": "Nyumburu Cultural Center",
+    "lat": 38.9881339,
+    "lng": -76.9438057866404
+  },
+  {
+    "name": "Oakland Hall (Residence Hall)",
+    "lat": 38.9938547,
+    "lng": -76.9492226797435
+  },
+  {
+    "name": "Paint Branch Drive Visitors Lot",
+    "lat": 38.99197045,
+    "lng": -76.9376652129763
+  },
+  {
+    "name": "Parking Lot 11b",
+    "lat": 38.9937827,
+    "lng": -76.9362203954441
+  },
+  {
+    "name": "Parking Lot 11c",
+    "lat": 38.99389735,
+    "lng": -76.93793265456
+  },
+  {
+    "name": "Parking Lot 11h",
+    "lat": 38.98254495,
+    "lng": -76.9353551969982
+  },
+  {
+    "name": "Parking Lot 15",
+    "lat": 38.9810048,
+    "lng": -76.9357555594133
+  },
+  {
+    "name": "Parking Lot 16a",
+    "lat": 38.98352975,
+    "lng": -76.93612975
+  },
+  {
+    "name": "Parking Lot 16b",
+    "lat": 38.9830317,
+    "lng": -76.9364642095338
+  },
+  {
+    "name": "Parking Lot 16c",
+    "lat": 38.98323445,
+    "lng": -76.9319854884635
+  },
+  {
+    "name": "Parking Lot 16d",
+    "lat": 38.98234055,
+    "lng": -76.9323682
+  },
+  {
+    "name": "Parking Lot 16e",
+    "lat": 38.982799,
+    "lng": -76.933294157523
+  },
+  {
+    "name": "Parking lot 16f",
+    "lat": 38.9831728,
+    "lng": -76.9339050233523
+  },
+  {
+    "name": "Parking Lot 16h",
+    "lat": 38.98314145,
+    "lng": -76.9315366103807
+  },
+  {
+    "name": "Parking Lot 19",
+    "lat": 38.98196015,
+    "lng": -76.945045171131
+  },
+  {
+    "name": "Parking Lot 1b",
+    "lat": 38.9870827,
+    "lng": -76.9494408398075
+  },
+  {
+    "name": "Parking Lot 1d",
+    "lat": 38.9861006,
+    "lng": -76.9506524287848
+  },
+  {
+    "name": "Parking Lot 2a",
+    "lat": 38.99420335,
+    "lng": -76.9481586165606
+  },
+  {
+    "name": "Parking Lot 2b",
+    "lat": 38.9931883,
+    "lng": -76.9505459201508
+  },
+  {
+    "name": "Parking Lot 2c",
+    "lat": 38.99230265,
+    "lng": -76.9477756507565
+  },
+  {
+    "name": "Parking Lot 2d",
+    "lat": 38.99238785,
+    "lng": -76.9455376145164
+  },
+  {
+    "name": "Parking Lot 2f",
+    "lat": 38.99257355,
+    "lng": -76.9414993575919
+  },
+  {
+    "name": "Parking Lot 2g",
+    "lat": 38.99440375,
+    "lng": -76.9472887836851
+  },
+  {
+    "name": "Parking Lot 4b",
+    "lat": 38.9970546,
+    "lng": -76.9411816982757
+  },
+  {
+    "name": "Parking Lot 4j",
+    "lat": 38.99721475,
+    "lng": -76.939228467483
+  },
+  {
+    "name": "Parking Lot 4n",
+    "lat": 38.9975986,
+    "lng": -76.9432485836194
+  },
+  {
+    "name": "Parking Lot 5",
+    "lat": 38.9897447,
+    "lng": -76.9409605
+  },
+  {
+    "name": "Parking Lot 6",
+    "lat": 38.9948837,
+    "lng": -76.9441223999729
+  },
+  {
+    "name": "Parking Lot 9b",
+    "lat": 38.99443435,
+    "lng": -76.9379480992313
+  },
+  {
+    "name": "Parking Lot 9c",
+    "lat": 38.994263,
+    "lng": -76.9392026889215
+  },
+  {
+    "name": "Parking Lot A",
+    "lat": 38.98430415,
+    "lng": -76.9445554411228
+  },
+  {
+    "name": "Parking Lot A*1",
+    "lat": 38.9862722,
+    "lng": -76.94812275
+  },
+  {
+    "name": "Parking Lot B",
+    "lat": 38.98961455,
+    "lng": -76.9409603
+  },
+  {
+    "name": "Parking Lot BB",
+    "lat": 38.98868945,
+    "lng": -76.9437432752211
+  },
+  {
+    "name": "Parking Lot C1",
+    "lat": 38.98662605,
+    "lng": -76.9373082470676
+  },
+  {
+    "name": "Parking Lot C2",
+    "lat": 38.98525575,
+    "lng": -76.9386466960901
+  },
+  {
+    "name": "Parking Lot CC1",
+    "lat": 38.99236635,
+    "lng": -76.9395347604447
+  },
+  {
+    "name": "Parking Lot CC2",
+    "lat": 38.9916206,
+    "lng": -76.940687
+  },
+  {
+    "name": "Parking Lot D",
+    "lat": 38.98512635,
+    "lng": -76.94503695
+  },
+  {
+    "name": "Parking Lot D",
+    "lat": 38.98552325,
+    "lng": -76.9453188124738
+  },
+  {
+    "name": "Parking Lot E",
+    "lat": 38.98927645,
+    "lng": -76.9371846
+  },
+  {
+    "name": "Parking Lot E*1",
+    "lat": 38.98895295,
+    "lng": -76.93950635
+  },
+  {
+    "name": "Parking Lot E*2",
+    "lat": 38.98936235,
+    "lng": -76.93874685
+  },
+  {
+    "name": "Parking Lot EE",
+    "lat": 38.98956665,
+    "lng": -76.93777255
+  },
+  {
+    "name": "Parking Lot F",
+    "lat": 38.98280315,
+    "lng": -76.9362193313411
+  },
+  {
+    "name": "Parking Lot FF",
+    "lat": 38.99431135,
+    "lng": -76.9399114407625
+  },
+  {
+    "name": "Parking Lot FF2",
+    "lat": 38.9931298,
+    "lng": -76.9392185247061
+  },
+  {
+    "name": "Parking Lot G",
+    "lat": 38.9919303,
+    "lng": -76.9385438831386
+  },
+  {
+    "name": "Parking Lot H1",
+    "lat": 38.98714445,
+    "lng": -76.9408901957625
+  },
+  {
+    "name": "Parking Lot HH1",
+    "lat": 38.9871964,
+    "lng": -76.9437705364812
+  },
+  {
+    "name": "Parking Lot HH2",
+    "lat": 38.99179395,
+    "lng": -76.9487217884698
+  },
+  {
+    "name": "Parking Lot I*",
+    "lat": 38.99243845,
+    "lng": -76.9369211101377
+  },
+  {
+    "name": "Parking Lot II1",
+    "lat": 38.9896806,
+    "lng": -76.93916665
+  },
+  {
+    "name": "Parking Lot JJ1",
+    "lat": 38.98539355,
+    "lng": -76.9483331340347
+  },
+  {
+    "name": "Parking Lot JJ2",
+    "lat": 38.9850641,
+    "lng": -76.9493049661468
+  },
+  {
+    "name": "Parking Lot JJ3",
+    "lat": 38.98614505,
+    "lng": -76.9491042944466
+  },
+  {
+    "name": "Parking Lot K*2",
+    "lat": 38.98664725,
+    "lng": -76.936078711566
+  },
+  {
+    "name": "Parking Lot K*4",
+    "lat": 38.986413,
+    "lng": -76.9348330271331
+  },
+  {
+    "name": "Parking Lot K*5",
+    "lat": 38.98521105,
+    "lng": -76.9349324800649
+  },
+  {
+    "name": "Parking Lot K1",
+    "lat": 4719533.97406,
+    "lng": -8564367.45346
+  },
+  {
+    "name": "Parking Lot K2",
+    "lat": 38.98554405,
+    "lng": -76.9346156087241
+  },
+  {
+    "name": "Parking Lot K4",
+    "lat": 38.99640555,
+    "lng": -76.9429211998132
+  },
+  {
+    "name": "Parking Lot K5",
+    "lat": 38.98296465,
+    "lng": -76.9363026926599
+  },
+  {
+    "name": "Parking Lot K6",
+    "lat": 38.99083205,
+    "lng": -76.9548861803616
+  },
+  {
+    "name": "Parking Lot KK",
+    "lat": 38.99074565,
+    "lng": -76.939126849749
+  },
+  {
+    "name": "Parking Lot KK1",
+    "lat": 38.99103585,
+    "lng": -76.9390710660194
+  },
+  {
+    "name": "Parking Lot L",
+    "lat": 38.985601,
+    "lng": -76.9390440880309
+  },
+  {
+    "name": "Parking Lot L*",
+    "lat": 38.98602365,
+    "lng": -76.9395731763922
+  },
+  {
+    "name": "Parking Lot ML*",
+    "lat": 38.9820502,
+    "lng": -76.9450454610869
+  },
+  {
+    "name": "Parking Lot MM1",
+    "lat": 38.99208515,
+    "lng": -76.9442824224091
+  },
+  {
+    "name": "Parking Lot MM2",
+    "lat": 38.9924268,
+    "lng": -76.9416584717757
+  },
+  {
+    "name": "Parking Lot MM3",
+    "lat": 38.99134275,
+    "lng": -76.94307075
+  },
+  {
+    "name": "Parking Lot N",
+    "lat": 38.992758,
+    "lng": -76.9483259502209
+  },
+  {
+    "name": "Parking Lot N*",
+    "lat": 38.99315285,
+    "lng": -76.9496207605017
+  },
+  {
+    "name": "Parking Lot N*",
+    "lat": 38.99306485,
+    "lng": -76.9488709100114
+  },
+  {
+    "name": "Parking Lot N*1",
+    "lat": 38.982763,
+    "lng": -76.9399408810552
+  },
+  {
+    "name": "Parking Lot N*2",
+    "lat": 38.98243265,
+    "lng": -76.9388435512149
+  },
+  {
+    "name": "Parking Lot N*3",
+    "lat": 38.9826911,
+    "lng": -76.943423876098
+  },
+  {
+    "name": "Parking Lot N3",
+    "lat": 38.9927533,
+    "lng": -76.9455457475625
+  },
+  {
+    "name": "Parking Lot N4",
+    "lat": 38.9925133,
+    "lng": -76.94428505
+  },
+  {
+    "name": "Parking Lot N5",
+    "lat": 38.9835147,
+    "lng": -76.9321558294979
+  },
+  {
+    "name": "Parking Lot N7",
+    "lat": 38.9925869,
+    "lng": -76.9477738109564
+  },
+  {
+    "name": "Parking Lot N9",
+    "lat": 38.99306985,
+    "lng": -76.946957493951
+  },
+  {
+    "name": "Parking Lot O1",
+    "lat": 38.98399525,
+    "lng": -76.94791655
+  },
+  {
+    "name": "Parking Lot O3",
+    "lat": 38.98442185,
+    "lng": -76.9483002446715
+  },
+  {
+    "name": "Parking Lot O4",
+    "lat": 38.9843053,
+    "lng": -76.9462971999815
+  },
+  {
+    "name": "Parking Lot O5",
+    "lat": 38.98355155,
+    "lng": -76.9477835
+  },
+  {
+    "name": "Parking Lot P*",
+    "lat": 38.9981942,
+    "lng": -76.94270605
+  },
+  {
+    "name": "Parking Lot P1",
+    "lat": 38.998125,
+    "lng": -76.9431896439374
+  },
+  {
+    "name": "Parking Lot P2",
+    "lat": 38.99898715,
+    "lng": -76.9421021500106
+  },
+  {
+    "name": "Parking Lot PP*",
+    "lat": 38.99385655,
+    "lng": -76.9403724850234
+  },
+  {
+    "name": "Parking Lot PP1",
+    "lat": 38.9933824,
+    "lng": -76.9420853788895
+  },
+  {
+    "name": "Parking Lot PP2",
+    "lat": 38.99385655,
+    "lng": -76.9406987273544
+  },
+  {
+    "name": "Parking Lot Q",
+    "lat": 38.9911695,
+    "lng": -76.9438760840556
+  },
+  {
+    "name": "Parking Lot Q1",
+    "lat": 38.9911726,
+    "lng": -76.9434800720619
+  },
+  {
+    "name": "Parking Lot R*",
+    "lat": 38.9893944,
+    "lng": -76.9456938440546
+  },
+  {
+    "name": "Parking Lot R3",
+    "lat": 38.9902248,
+    "lng": -76.9455308111322
+  },
+  {
+    "name": "Parking Lot R4",
+    "lat": 38.99062525,
+    "lng": -76.95470385
+  },
+  {
+    "name": "Parking Lot RR",
+    "lat": 38.98948445,
+    "lng": -76.9409602
+  },
+  {
+    "name": "Parking Lot RR1",
+    "lat": 38.9869681,
+    "lng": -76.9344902879538
+  },
+  {
+    "name": "Parking Lot RR2",
+    "lat": 38.9948436,
+    "lng": -76.9379107465909
+  },
+  {
+    "name": "Parking Lot RR2",
+    "lat": 38.9876128,
+    "lng": -76.9343316115429
+  },
+  {
+    "name": "Parking Lot S3",
+    "lat": 38.9925145,
+    "lng": -76.9430233373487
+  },
+  {
+    "name": "Parking Lot S4",
+    "lat": 38.98246725,
+    "lng": -76.943739453674
+  },
+  {
+    "name": "Parking Lot S5",
+    "lat": 38.9933015,
+    "lng": -76.9494324090596
+  },
+  {
+    "name": "Parking Lot S7",
+    "lat": 38.99283285,
+    "lng": -76.9477725756751
+  },
+  {
+    "name": "Parking Lot S8",
+    "lat": 38.99288295,
+    "lng": -76.9467035382421
+  },
+  {
+    "name": "Parking Lot SD*",
+    "lat": 38.9902444,
+    "lng": -76.9489187705445
+  },
+  {
+    "name": "Parking Lot SS1",
+    "lat": 38.9937615,
+    "lng": -76.9441549116248
+  },
+  {
+    "name": "Parking Lot SS2",
+    "lat": 38.99397245,
+    "lng": -76.9463360969161
+  },
+  {
+    "name": "Parking Lot SS3",
+    "lat": 38.9942645,
+    "lng": -76.94667609821
+  },
+  {
+    "name": "Parking Lot T",
+    "lat": 38.98986685,
+    "lng": -76.9377298240488
+  },
+  {
+    "name": "Parking Lot TT",
+    "lat": 38.98852595,
+    "lng": -76.94036895
+  },
+  {
+    "name": "Parking Lot U1",
+    "lat": 38.9826911,
+    "lng": -76.9437394
+  },
+  {
+    "name": "Parking Lot U6",
+    "lat": 38.9828241,
+    "lng": -76.9450241678599
+  },
+  {
+    "name": "Parking Lot U6",
+    "lat": 38.9828063,
+    "lng": -76.9449759499812
+  },
+  {
+    "name": "Parking Lot UU",
+    "lat": 38.99054885,
+    "lng": -76.9398296251258
+  },
+  {
+    "name": "Parking Lot W",
+    "lat": 38.98486265,
+    "lng": -76.9413860371152
+  },
+  {
+    "name": "Parking Lot W1",
+    "lat": 38.98494595,
+    "lng": -76.9424845941378
+  },
+  {
+    "name": "Parking Lot XX1",
+    "lat": 38.9900403,
+    "lng": -76.935617290379
+  },
+  {
+    "name": "Parking Lot XX2",
+    "lat": 38.99147625,
+    "lng": -76.9367968153632
+  },
+  {
+    "name": "Parking Lot XX4",
+    "lat": 38.99316725,
+    "lng": -76.937826475598
+  },
+  {
+    "name": "Parking Lot XX5",
+    "lat": 38.9909658,
+    "lng": -76.93692095
+  },
+  {
+    "name": "Parking Lot Y",
+    "lat": 38.9840286,
+    "lng": -76.9419977518114
+  },
+  {
+    "name": "Parking Lot YC",
+    "lat": 38.993677,
+    "lng": -76.9480388560794
+  },
+  {
+    "name": "Parking Lot Z",
+    "lat": 38.98813685,
+    "lng": -76.9485514812047
+  },
+  {
+    "name": "Parking Lot Z*",
+    "lat": 38.9887473,
+    "lng": -76.9467581
+  },
+  {
+    "name": "Parking Lot Z1",
+    "lat": 38.9890159,
+    "lng": -76.9475152
+  },
+  {
+    "name": "Patapsco Building",
+    "lat": 38.9767149,
+    "lng": -76.9249429909109
+  },
+  {
+    "name": "Patuxent Building",
+    "lat": 38.98863025,
+    "lng": -76.943483756875
+  },
+  {
+    "name": "Pest Control Trailer",
+    "lat": 38.98515375,
+    "lng": -76.9335922924701
+  },
+  {
+    "name": "Phi Kappa Tau",
+    "lat": 38.9845988,
+    "lng": -76.93463845
+  },
+  {
+    "name": "Phi Sigma Sigma Sorority",
+    "lat": 38.9813563,
+    "lng": -76.9356071135738
+  },
+  {
+    "name": "Physical Distribution Center (Terrapin Trader)",
+    "lat": 38.9819567,
+    "lng": -76.9292279695603
+  },
+  {
+    "name": "Physics Building",
+    "lat": 38.9886972,
+    "lng": -76.94007719774
+  },
+  {
+    "name": "Pi Kappa Alpha Fraternity",
+    "lat": 38.9846297,
+    "lng": -76.936200475
+  },
+  {
+    "name": "Plant Operations and Maintenance",
+    "lat": 38.98600515,
+    "lng": -76.9340028269637
+  },
+  {
+    "name": "Plant Operations and Maintenance Shop Building",
+    "lat": 38.98503875,
+    "lng": -76.9334591527876
+  },
+  {
+    "name": "Plant Operations and Maintenance Shop2",
+    "lat": 38.98657335,
+    "lng": -76.9344044678528
+  },
+  {
+    "name": "Plant Operations and Maintenance Shop3",
+    "lat": 38.9867869,
+    "lng": -76.9342274025325
+  },
+  {
+    "name": "Plant Operations and Maintenance Shops",
+    "lat": 38.9858077,
+    "lng": -76.93452175
+  },
+  {
+    "name": "Plant Operations and Maintenance Warehouse",
+    "lat": 38.98636865,
+    "lng": -76.9339846304955
+  },
+  {
+    "name": "Plant Science Building",
+    "lat": 38.98873715,
+    "lng": -76.9413596237531
+  },
+  {
+    "name": "Pocomoke Building",
+    "lat": 38.98295055,
+    "lng": -76.9371601416079
+  },
+  {
+    "name": "Police Impound",
+    "lat": 38.98301005,
+    "lng": -76.9312547643577
+  },
+  {
+    "name": "Police Substation",
+    "lat": 38.9825402,
+    "lng": -76.9355837584007
+  },
+  {
+    "name": "Potomac Building",
+    "lat": 38.9903918,
+    "lng": -76.93830195
+  },
+  {
+    "name": "Preinkert Field House",
+    "lat": 38.9844511,
+    "lng": -76.9461320708538
+  },
+  {
+    "name": "Presidents Residence",
+    "lat": 38.9885031,
+    "lng": -76.9523499501432
+  },
+  {
+    "name": "Prince Georges Hall",
+    "lat": 38.9825857,
+    "lng": -76.941826725
+  },
+  {
+    "name": "Pump House",
+    "lat": 38.9886431,
+    "lng": -76.9465122
+  },
+  {
+    "name": "Queen Annes Hall",
+    "lat": 38.98519025,
+    "lng": -76.9460068545931
+  },
+  {
+    "name": "Reckord Armory",
+    "lat": 38.9860268,
+    "lng": -76.9389662139866
+  },
+  {
+    "name": "Recreation Artificial Turf Field",
+    "lat": 38.9954899,
+    "lng": -76.9391820716749
+  },
+  {
+    "name": "Recycling Center",
+    "lat": 38.99566315,
+    "lng": -76.9372141594106
+  },
+  {
+    "name": "Regents Drive Parking Garage",
+    "lat": 38.9897313,
+    "lng": -76.9414582777038
+  },
+  {
+    "name": "Research Greenhouse",
+    "lat": 38.997127,
+    "lng": -76.942996197787
+  },
+  {
+    "name": "Ritchie Coliseum",
+    "lat": 38.98504805,
+    "lng": -76.936456447182
+  },
+  {
+    "name": "Robert E. Taylor Softball Stadium",
+    "lat": 38.99629445,
+    "lng": -76.9397458168949
+  },
+  {
+    "name": "Rosenbloom Hillel Center for Jewish Life",
+    "lat": 38.98270895,
+    "lng": -76.9487503080679
+  },
+  {
+    "name": "Rossborough Inn",
+    "lat": 38.9853423,
+    "lng": -76.9376116836577
+  },
+  {
+    "name": "Route One Annex",
+    "lat": 38.99373045,
+    "lng": -76.9332763982874
+  },
+  {
+    "name": "Samuel Riggs IV Alumni Center",
+    "lat": 38.9894604,
+    "lng": -76.9490713634912
+  },
+  {
+    "name": "Satellite Central Utilities Building 1",
+    "lat": 38.98202525,
+    "lng": -76.9404483999786
+  },
+  {
+    "name": "Satellite Central Utilities Building 2",
+    "lat": 38.9835376,
+    "lng": -76.9446545340067
+  },
+  {
+    "name": "Satellite Central Utilities Building 3",
+    "lat": 38.98909655,
+    "lng": -76.9459512158262
+  },
+  {
+    "name": "Satellite Central Utilities Building 4",
+    "lat": 38.98979345,
+    "lng": -76.9383176
+  },
+  {
+    "name": "School of Public Health",
+    "lat": 38.9934922,
+    "lng": -76.9431633838994
+  },
+  {
+    "name": "Security Booth (Campus Drive)",
+    "lat": 38.98857565,
+    "lng": -76.936510313403
+  },
+  {
+    "name": "Security Booth (Stadium Drive)",
+    "lat": 38.99198405,
+    "lng": -76.95045855
+  },
+  {
+    "name": "Service Building (University of Maryland, Police)",
+    "lat": 38.98597645,
+    "lng": -76.9361406358543
+  },
+  {
+    "name": "Sheep Barn",
+    "lat": 38.99169565,
+    "lng": -76.9414407668993
+  },
+  {
+    "name": "Shipley Field House (Baseball)",
+    "lat": 38.9889419,
+    "lng": -76.9441134376408
+  },
+  {
+    "name": "Shoemaker Building",
+    "lat": 38.9839376,
+    "lng": -76.942745495777
+  },
+  {
+    "name": "Shriver Laboratory",
+    "lat": 38.98727505,
+    "lng": -76.94191685
+  },
+  {
+    "name": "Shuttle Bus Facility",
+    "lat": 38.9955167,
+    "lng": -76.9365504141656
+  },
+  {
+    "name": "Shuttle Bus Facility",
+    "lat": 38.98692845,
+    "lng": -76.9338891741985
+  },
+  {
+    "name": "Shuttle Bus Trailer 2",
+    "lat": 38.9870785,
+    "lng": -76.93407295
+  },
+  {
+    "name": "Sigma Delta Tau Sorority",
+    "lat": 38.9806496,
+    "lng": -76.93587565
+  },
+  {
+    "name": "Sigma Kappa Sorority",
+    "lat": 38.9832453,
+    "lng": -76.93514475
+  },
+  {
+    "name": "Sigma Phi Epsilon Fraternity",
+    "lat": 38.98356725,
+    "lng": -76.9341870726646
+  },
+  {
+    "name": "Skinner Building",
+    "lat": 38.98480955,
+    "lng": -76.9418413304917
+  },
+  {
+    "name": "Somerset Hall (Residence Hall)",
+    "lat": 38.9850026,
+    "lng": -76.9455473
+  },
+  {
+    "name": "South Campus Commons 1",
+    "lat": 38.98211405,
+    "lng": -76.9429384672295
+  },
+  {
+    "name": "South Campus Commons 2",
+    "lat": 38.9828397,
+    "lng": -76.942933891664
+  },
+  {
+    "name": "South Campus Commons 3",
+    "lat": 38.98147685,
+    "lng": -76.9397267748109
+  },
+  {
+    "name": "South Campus Commons 4",
+    "lat": 38.98128715,
+    "lng": -76.9414232588701
+  },
+  {
+    "name": "South Campus Commons 5",
+    "lat": 38.98275075,
+    "lng": -76.94470195
+  },
+  {
+    "name": "South Campus Commons 6",
+    "lat": 38.98216555,
+    "lng": -76.9446791864948
+  },
+  {
+    "name": "South Campus Commons 7",
+    "lat": 38.9815547,
+    "lng": -76.9445591280214
+  },
+  {
+    "name": "South Campus Dining Hall",
+    "lat": 38.983048,
+    "lng": -76.9436837393588
+  },
+  {
+    "name": "South Gate (Regents Dr. and Rt. 1)",
+    "lat": 38.9823717,
+    "lng": -76.938869
+  },
+  {
+    "name": "Special Education Trailer One",
+    "lat": 38.9869185,
+    "lng": -76.94795265
+  },
+  {
+    "name": "Special Education Trailer Two",
+    "lat": 38.9867484,
+    "lng": -76.94795265
+  },
+  {
+    "name": "Special Services Office Building",
+    "lat": 38.98651785,
+    "lng": -76.93443985
+  },
+  {
+    "name": "St. Mary's Hall (Residence Hall)",
+    "lat": 38.9870071,
+    "lng": -76.9455983683182
+  },
+  {
+    "name": "Stadium Drive Parking Garage",
+    "lat": 38.9910407,
+    "lng": -76.9489997913519
+  },
+  {
+    "name": "Susquehanna Hall",
+    "lat": 38.9820745,
+    "lng": -76.943749743933
+  },
+  {
+    "name": "Symons Hall",
+    "lat": 38.9870811,
+    "lng": -76.9406455474374
+  },
+  {
+    "name": "Talbot Hall (Residence Hall)",
+    "lat": 38.9833387,
+    "lng": -76.9422561
+  },
+  {
+    "name": "Taliaferro Hall",
+    "lat": 38.98484635,
+    "lng": -76.9430948392412
+  },
+  {
+    "name": "Tau Kappa Epsilon Fraternity",
+    "lat": 38.9846469,
+    "lng": -76.93563395
+  },
+  {
+    "name": "Tawes Fine Arts Building",
+    "lat": 38.98598645,
+    "lng": -76.9483238494655
+  },
+  {
+    "name": "Technology Advancement Building",
+    "lat": 38.99251055,
+    "lng": -76.938615024697
+  },
+  {
+    "name": "Technology Ventures Building",
+    "lat": 38.97964495,
+    "lng": -76.9255078851059
+  },
+  {
+    "name": "Temporary Building",
+    "lat": 38.9852606,
+    "lng": -76.9337296097556
+  },
+  {
+    "name": "Temporary Building1",
+    "lat": 38.9836276,
+    "lng": -76.9327854891442
+  },
+  {
+    "name": "Temporary Building2",
+    "lat": 38.983738,
+    "lng": -76.9328960630658
+  },
+  {
+    "name": "Terrapin Trail Parking Garage",
+    "lat": 38.99497,
+    "lng": -76.9433528356638
+  },
+  {
+    "name": "The Diner",
+    "lat": 38.9925679,
+    "lng": -76.9466253202392
+  },
+  {
+    "name": "The Domain",
+    "lat": 38.98418695,
+    "lng": -76.9493582912198
+  },
+  {
+    "name": "The Varsity",
+    "lat": 38.99146725,
+    "lng": -76.9344594915205
+  },
+  {
+    "name": "Track/Soccer Ticket Booth",
+    "lat": 38.9874593,
+    "lng": -76.9498700750045
+  },
+  {
+    "name": "Turner Hall (Dairy/Visitor Center)",
+    "lat": 38.98614065,
+    "lng": -76.9373371743758
+  },
+  {
+    "name": "Tydings Hall",
+    "lat": 38.9848516,
+    "lng": -76.9440007655894
+  },
+  {
+    "name": "Tyser Tower",
+    "lat": 38.98970955,
+    "lng": -76.9478028839735
+  },
+  {
+    "name": "UMUC Hotel",
+    "lat": 38.9860612,
+    "lng": -76.9552482403172
+  },
+  {
+    "name": "UMUC Inn and Conference Center (ICC)",
+    "lat": 38.9860659,
+    "lng": -76.9540770364453
+  },
+  {
+    "name": "UMUC Student and Faculty Services Center",
+    "lat": 38.9866594,
+    "lng": -76.9533396302397
+  },
+  {
+    "name": "UMUC/University College Garage (PGUC)",
+    "lat": 38.98699405,
+    "lng": -76.9544177389556
+  },
+  {
+    "name": "Union Lane Parking Garage",
+    "lat": 38.98840855,
+    "lng": -76.9458968038597
+  },
+  {
+    "name": "University Baptist Church",
+    "lat": 38.98425975,
+    "lng": -76.95374930076
+  },
+  {
+    "name": "University Hills Apartments1",
+    "lat": 38.98514415,
+    "lng": -76.9562455643617
+  },
+  {
+    "name": "University Hills Apartments2",
+    "lat": 38.9850375,
+    "lng": -76.9572075604853
+  },
+  {
+    "name": "University Hills Apartments3",
+    "lat": 38.98494235,
+    "lng": -76.9582383073659
+  },
+  {
+    "name": "University Hills Apartments4",
+    "lat": 38.98442205,
+    "lng": -76.9583539620815
+  },
+  {
+    "name": "University Hills Apartments5",
+    "lat": 38.9844605,
+    "lng": -76.9573552914719
+  },
+  {
+    "name": "University Hills Apartments6",
+    "lat": 38.9843953,
+    "lng": -76.9562790737231
+  },
+  {
+    "name": "University Hills Apartments7",
+    "lat": 38.98447435,
+    "lng": -76.9558676954921
+  },
+  {
+    "name": "University United Methodist Church",
+    "lat": 38.98421265,
+    "lng": -76.9513539156316
+  },
+  {
+    "name": "University View",
+    "lat": 38.99256455,
+    "lng": -76.9344298975591
+  },
+  {
+    "name": "University View II",
+    "lat": 38.99251945,
+    "lng": -76.9336210376858
+  },
+  {
+    "name": "Univesity Research Center (North)",
+    "lat": 38.9722927,
+    "lng": -76.9222887214757
+  },
+  {
+    "name": "Univesity Research Center (South)",
+    "lat": 38.970879,
+    "lng": -76.9218988073354
+  },
+  {
+    "name": "Van Munching Hall",
+    "lat": 38.9830467,
+    "lng": -76.9470382916646
+  },
+  {
+    "name": "Varsity Sports Teamhouse",
+    "lat": 38.99006865,
+    "lng": -76.9451814170622
+  },
+  {
+    "name": "Washington Hall (Residence Hall)",
+    "lat": 38.9818076,
+    "lng": -76.9413924749198
+  },
+  {
+    "name": "Wicomico Hall (Residence Hall)",
+    "lat": 38.9837427,
+    "lng": -76.9458442795105
+  },
+  {
+    "name": "Wind Tunnel Building",
+    "lat": 38.9899002,
+    "lng": -76.9368484609687
+  },
+  {
+    "name": "Woods Hall",
+    "lat": 38.9851106,
+    "lng": -76.9418451233709
+  },
+  {
+    "name": "Worchester Hall (Residence Hall)",
+    "lat": 38.98467285,
+    "lng": -76.9449993420465
+  },
+  {
+    "name": "Zeta Beta Tau",
+    "lat": 38.9832052,
+    "lng": -76.9371918048901
+  },
+  {
+    "name": "Zeta Psi Fraternity",
+    "lat": 38.9832584,
+    "lng": -76.9366895
+  },
+  {
+    "name": "Zeta Tau Alpha",
+    "lat": 38.98325535,
+    "lng": -76.9361831249379
+  }
+]

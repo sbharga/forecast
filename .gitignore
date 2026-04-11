@@ -4,6 +4,8 @@
 .env
 .env.*
 !.env.example
+backend/.env
+credentials.json
 *.pem
 secrets.json
 google-services.json

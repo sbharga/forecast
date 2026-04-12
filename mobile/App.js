@@ -3,14 +3,15 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { LayoutList, Map, UserCog } from 'lucide-react-native';
+import { LayoutList, Map, Timer, UserCog } from 'lucide-react-native';
 import * as Location from 'expo-location';
 
 import { EventsProvider } from './contexts/EventsContext';
 import { AuthProvider } from './contexts/AuthContext';
-import MapScreen   from './screens/MapScreen';
-import FeedScreen  from './screens/FeedScreen';
-import IntelScreen from './screens/IntelScreen';
+import MapScreen       from './screens/MapScreen';
+import FeedScreen      from './screens/FeedScreen';
+import DeadlinesScreen from './screens/DeadlinesScreen';
+import IntelScreen     from './screens/IntelScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -45,17 +46,19 @@ export default function App() {
               },
               tabBarIcon: ({ color, size }) => {
                 const icons = {
-                  Map:   <Map        size={size} color={color} />,
-                  Feed:  <LayoutList size={size} color={color} />,
-                  Intel: <UserCog    size={size} color={color} />,
+                  Map:       <Map        size={size} color={color} />,
+                  Feed:      <LayoutList size={size} color={color} />,
+                  Deadlines: <Timer      size={size} color={color} />,
+                  Intel:     <UserCog    size={size} color={color} />,
                 };
                 return icons[route.name] ?? null;
               },
             })}
           >
-            <Tab.Screen name="Map"   component={MapScreen}   />
-            <Tab.Screen name="Feed"  component={FeedScreen}  />
-            <Tab.Screen name="Intel" component={IntelScreen} />
+            <Tab.Screen name="Map"       component={MapScreen}       />
+            <Tab.Screen name="Feed"      component={FeedScreen}      />
+            <Tab.Screen name="Deadlines" component={DeadlinesScreen} />
+            <Tab.Screen name="Intel"     component={IntelScreen}     />
           </Tab.Navigator>
         </NavigationContainer>
       </EventsProvider>

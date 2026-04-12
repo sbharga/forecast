@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Scope",
-    "slug": "scope",
+    "name": "Forecast",
+    "slug": "forecast",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -9,7 +9,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "edu.umd.scope",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Scope uses your location to show nearby campus events."
+        "NSLocationWhenInUseUsageDescription": "Forecast uses your location to show nearby campus events."
       }
     },
     "android": {
@@ -20,7 +20,7 @@
         }
       }
     },
-    "scheme": ["edu.umd.scope", "com.googleusercontent.apps.791707106408-g9vuagpigd4hrgde6qibtuma4uicl470"],
+    "scheme": "edu.umd.scope",
     "plugins": [
       "expo-asset",
       "expo-font",

@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 from google import genai
 from google.genai import types
 
-log = logging.getLogger("scope.ai_parser")
+log = logging.getLogger("forecast.ai_parser")
 
 # Load valid campus buildings
 _CAMPUS_MAP_PATH = os.path.join(os.path.dirname(__file__), "..", "campus_map.json")
@@ -47,15 +47,16 @@ def extract_event(
         return None
 
     system_prompt = f"""
-You are an event extraction AI. Extract the details of the event described in the text/image.
+You are an event and deadline extraction AI. Extract details from the text/image.
 Return ONLY a valid JSON object with the following keys and NO markdown formatting or wrapping backticks:
-- "title": event name (string)
-- "start_time": strictly an ISO-8601 string, e.g. "2026-04-12T18:00:00-04:00"
+- "title": event or opportunity name (string)
+- "start_time": strictly an ISO-8601 string for when the event starts, e.g. "2026-04-12T18:00:00-04:00". Null if unknown.
+- "deadline_time": strictly an ISO-8601 string for any application/registration/submission deadline mentioned. Null if none.
 - "location": you MUST choose the closest matching building from this list: {json.dumps(VALID_BUILDINGS)}. If the location is off-campus or does not match any building in this list, you MUST set location to null.
 - "link": string, or empty string if none
 - "source": always "{source}"
 
-If the input does not describe an event, return exactly: null
+If the input does not describe an event or deadline at all, return exactly: null
 """
 
     contents = [types.Part.from_text(text=raw_text)]

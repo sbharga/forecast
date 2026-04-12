@@ -1,5 +1,6 @@
 import React, { useRef, useMemo, useState } from 'react';
 import {
+  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -18,10 +19,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import {
-  ArrowUpDown, Calendar, Clock, ExternalLink,
+  ArrowUpDown, CalendarPlus, Clock, ExternalLink,
   MapPin, Navigation, Search, X,
 } from 'lucide-react-native';
 import { useEvents } from '../contexts/EventsContext';
+import { useAuth } from '../contexts/AuthContext';
 import { CATEGORIES, categorizeEvent } from '../utils/categories';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -95,6 +97,37 @@ function matchedKeywords(event, userKeywords) {
   return userKeywords.filter(kw => text.includes(kw.toLowerCase()));
 }
 
+// ─── Calendar helper ──────────────────────────────────────────────────────
+async function addToGoogleCalendar(event, accessToken) {
+  const start = new Date(event.start_time);
+  const end   = new Date(start.getTime() + 60 * 60 * 1000); // assume 1h duration
+
+  const body = {
+    summary:  event.title,
+    location: event.location || 'UMD Campus',
+    start: { dateTime: start.toISOString(), timeZone: 'America/New_York' },
+    end:   { dateTime: end.toISOString(),   timeZone: 'America/New_York' },
+  };
+
+  const res = await fetch(
+    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+    {
+      method:  'POST',
+      headers: {
+        Authorization:  `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 // ─── Tier 1: Top Pick (80–100) ─────────────────────────────────────────────
 function TopPickCard({ event }) {
   const live     = isLive(event);
@@ -109,9 +142,6 @@ function TopPickCard({ event }) {
         <View style={styles.topCardTopRow}>
           <View style={[styles.catTag, { backgroundColor: catColor + '22' }]}>
             <Text style={[styles.catTagText, { color: catColor }]}>{catLabel}</Text>
-          </View>
-          <View style={styles.topScorePill}>
-            <Text style={styles.topScoreText}>{event.priorityScore}</Text>
           </View>
         </View>
         <View style={styles.titleRow}>
@@ -142,9 +172,6 @@ function StrongMatchCard({ event }) {
     <View style={styles.strongCard}>
       <View style={[styles.banner, { backgroundColor: catColor }]}>
         <Text style={styles.bannerText}>{catLabel}</Text>
-        <View style={styles.strongScorePill}>
-          <Text style={styles.strongScoreText}>{event.priorityScore}</Text>
-        </View>
       </View>
       <View style={styles.strongCardBody}>
         <View style={styles.titleRow}>
@@ -189,13 +216,23 @@ function CompactCard({ event }) {
 }
 
 // ─── Event Detail Popup ────────────────────────────────────────────────────
-function EventPopup({ event, userKeywords, onClose, onViewOnMap, scaleAnim, opacityAnim }) {
+function EventPopup({ event, userKeywords, accessToken, onClose, onViewOnMap, scaleAnim, opacityAnim }) {
   const live      = isLive(event);
   const cat       = categorizeEvent(event);
   const catColor  = CATEGORIES[cat].color;
   const catLabel  = CATEGORIES[cat].label;
   const relTime   = relativeTime(event.start_time);
   const matched   = matchedKeywords(event, userKeywords);
+  const [calAdded, setCalAdded] = useState(false);
+
+  async function handleAddToCalendar() {
+    try {
+      await addToGoogleCalendar(event, accessToken);
+      setCalAdded(true);
+    } catch (e) {
+      Alert.alert('Could not add to calendar', e.message);
+    }
+  }
 
   return (
     <View pointerEvents="box-none" style={styles.popupWrapper}>
@@ -218,19 +255,12 @@ function EventPopup({ event, userKeywords, onClose, onViewOnMap, scaleAnim, opac
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Score + Live row */}
-          {(event.priorityScore > 0 || live) && (
+          {/* Live badge row */}
+          {live && (
             <View style={styles.popupBadgeRow}>
-              {event.priorityScore > 0 && (
-                <View style={styles.popupScorePill}>
-                  <Text style={styles.popupScoreText}>{event.priorityScore}</Text>
-                </View>
-              )}
-              {live && (
-                <View style={styles.liveBadge}>
-                  <Text style={styles.liveBadgeText}>LIVE</Text>
-                </View>
-              )}
+              <View style={styles.liveBadge}>
+                <Text style={styles.liveBadgeText}>LIVE</Text>
+              </View>
             </View>
           )}
 
@@ -290,18 +320,33 @@ function EventPopup({ event, userKeywords, onClose, onViewOnMap, scaleAnim, opac
 
         {/* Action buttons */}
         <View style={styles.popupActions}>
-          <TouchableOpacity style={styles.popupMapBtn} onPress={onViewOnMap} activeOpacity={0.8}>
-            <Navigation size={15} color="#fff" />
-            <Text style={styles.popupMapBtnText}>View on Map</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.popupLinkBtn}
-            onPress={() => Linking.openURL(event.link).catch(() => {})}
-            activeOpacity={0.8}
-          >
-            <ExternalLink size={15} color={SCOPE_BLUE} />
-            <Text style={styles.popupLinkBtnText}>{ctaLabel(event.source)}</Text>
-          </TouchableOpacity>
+          <View style={styles.popupActionsRow}>
+            <TouchableOpacity style={styles.popupMapBtn} onPress={onViewOnMap} activeOpacity={0.8}>
+              <Navigation size={15} color="#fff" />
+              <Text style={styles.popupMapBtnText}>View on Map</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.popupLinkBtn}
+              onPress={() => Linking.openURL(event.link).catch(() => {})}
+              activeOpacity={0.8}
+            >
+              <ExternalLink size={15} color={SCOPE_BLUE} />
+              <Text style={styles.popupLinkBtnText}>{ctaLabel(event.source)}</Text>
+            </TouchableOpacity>
+          </View>
+          {accessToken && (
+            <TouchableOpacity
+              style={[styles.popupCalBtn, calAdded && styles.popupCalBtnDone]}
+              onPress={handleAddToCalendar}
+              activeOpacity={0.8}
+              disabled={calAdded}
+            >
+              <CalendarPlus size={15} color={calAdded ? '#34C759' : SCOPE_BLUE} />
+              <Text style={[styles.popupCalBtnText, calAdded && styles.popupCalBtnTextDone]}>
+                {calAdded ? 'Added to Calendar' : 'Add to Google Calendar'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Animated.View>
     </View>
@@ -311,6 +356,7 @@ function EventPopup({ event, userKeywords, onClose, onViewOnMap, scaleAnim, opac
 // ─── Screen ────────────────────────────────────────────────────────────────
 export default function FeedScreen() {
   const { events, loading, refreshing, error, refresh, userKeywords } = useEvents();
+  const { accessToken } = useAuth();
   const navigation = useNavigation();
   const [query,         setQuery]         = useState('');
   const [sortBy,        setSortBy]        = useState('priority');
@@ -466,6 +512,7 @@ export default function FeedScreen() {
           <EventPopup
             event={selectedEvent}
             userKeywords={userKeywords}
+            accessToken={accessToken}
             onClose={closePopup}
             onViewOnMap={() => handleViewOnMap(selectedEvent)}
             scaleAnim={scaleAnim}
@@ -649,10 +696,11 @@ const styles = StyleSheet.create({
   matchedPillText: { fontSize: 11, fontWeight: '600' },
 
   popupActions: {
-    flexDirection: 'row', gap: 10,
+    gap: 8,
     paddingHorizontal: 20, paddingVertical: 16,
     borderTopWidth: 1, borderTopColor: '#F1F5F9',
   },
+  popupActionsRow: { flexDirection: 'row', gap: 10 },
   popupMapBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     justifyContent: 'center', gap: 7,
@@ -666,4 +714,13 @@ const styles = StyleSheet.create({
     borderRadius: 14, paddingVertical: 13,
   },
   popupLinkBtnText: { fontSize: 14, fontWeight: '600', color: SCOPE_BLUE },
+  popupCalBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center', gap: 7,
+    borderWidth: 1.5, borderColor: SCOPE_BLUE,
+    borderRadius: 14, paddingVertical: 11,
+  },
+  popupCalBtnDone:     { borderColor: '#34C759' },
+  popupCalBtnText:     { fontSize: 13, fontWeight: '600', color: SCOPE_BLUE },
+  popupCalBtnTextDone: { color: '#34C759' },
 });

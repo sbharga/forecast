@@ -13,9 +13,10 @@ from typing import Any, Dict, List
 import requests
 
 from core.database import upsert_events
+from core.embedder import embedding_to_json, generate_embedding
 from core.geocoder import get_coordinates
 
-log = logging.getLogger("scope.terplink")
+log = logging.getLogger("forecast.terplink")
 
 TERPLINK_URL = "https://terplink.umd.edu/api/discovery/event/search"
 
@@ -23,7 +24,7 @@ HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36 ScopeBot/1.0"
+        "Chrome/124.0.0.0 Safari/537.36 ForecastBot/1.0"
     ),
     "Accept": "application/json",
 }
@@ -65,7 +66,7 @@ def fetch_and_sync(limit: int = 300) -> int:
         return 0
 
     raw_events = resp.json().get("value", [])
-    log.info("[terplink] Received %d raw events. Geocoding…", len(raw_events))
+    log.info("[terplink] Received %d raw events. Geocoding + embedding…", len(raw_events))
 
     map_ready: List[Dict[str, Any]] = []
     skipped = 0
@@ -80,6 +81,15 @@ def fetch_and_sync(limit: int = 300) -> int:
         event_id = e.get("id")
         title = (e.get("name") or "").strip()
 
+        embed_text = title
+        if location:
+            embed_text += " " + location
+        try:
+            embedding = embedding_to_json(generate_embedding(embed_text))
+        except Exception as emb_err:
+            log.warning("[terplink] Embedding failed for '%s': %s", title, emb_err)
+            embedding = None
+
         map_ready.append(
             {
                 "id":         event_id,
@@ -90,6 +100,7 @@ def fetch_and_sync(limit: int = 300) -> int:
                 "link":       f"https://terplink.umd.edu/event/{event_id}",
                 "location":   location or None,
                 "source":     "terplink",
+                "embedding":  embedding,
             }
         )
 

@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { calculateScore, KEYWORDS_STORAGE_KEY } from '../utils/scoring';
@@ -30,27 +30,29 @@ async function fetchWithRetry(url, { retries = 3, delayMs = 1500 } = {}) {
   let lastErr;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      console.log(`Scope: fetch start ${attempt}/${retries} -> ${url}`);
+      console.log(`Forecast: fetch start ${attempt}/${retries} -> ${url}`);
       return await fetch(url);
     } catch (err) {
       lastErr = err;
-      console.warn(`Scope: fetch attempt ${attempt}/${retries} failed — ${err.message}`);
+      console.warn(`Forecast: fetch attempt ${attempt}/${retries} failed — ${err.message}`);
       if (attempt < retries) await new Promise(r => setTimeout(r, delayMs));
     }
   }
   throw lastErr;
 }
+
 const DEFAULT_KEYWORDS = ['Tech'];
 // Bump this when scoring logic changes to invalidate stale cached scores
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const EVENTS_CACHE_KEY = `@scope_events_cache_${CACHE_VERSION}`;
 const EVENTS_CACHE_TIMESTAMP_KEY = `@scope_events_cache_timestamp_${CACHE_VERSION}`;
 
 const EventsContext = createContext(null);
 
-function buildEventsUrl(since) {
+function buildEventsUrl(since, keywords) {
   const params = new URLSearchParams();
   if (since) params.set('since', since);
+  if (keywords && keywords.length > 0) params.set('keywords', keywords.join(','));
   const qs = params.toString();
   return `${API_BASE_URL}/api/events${qs ? `?${qs}` : ''}`;
 }
@@ -73,10 +75,12 @@ export function EventsProvider({ children }) {
       .finally(() => setLoadingKeywords(false));
   }, []);
 
-  // ── Startup: show cache instantly, fetch fresh in background ──────────
+  // ── Startup: show cache instantly, then full fetch once keywords load ──
   useEffect(() => {
+    if (loadingKeywords) return;
+
     (async () => {
-      console.log(`Scope: using API base URL ${API_BASE_URL}`);
+      console.log(`Forecast: using API base URL ${API_BASE_URL}`);
 
       // 1. Show cached events immediately
       try {
@@ -88,23 +92,23 @@ export function EventsProvider({ children }) {
           setRawEvents(JSON.parse(cachedRaw));
           lastFetchedAt.current = cachedTimestamp || null;
           setLoading(false);
-          console.log(`Scope: loaded ${JSON.parse(cachedRaw).length} events from cache`);
+          console.log(`Forecast: loaded ${JSON.parse(cachedRaw).length} events from cache`);
         }
       } catch (_) {}
 
-      // 2. Full fetch on startup
+      // 2. Full fetch with current keywords so server scores everything
       try {
         const fetchedAt = new Date().toISOString();
-        const eventsUrl = `${API_BASE_URL}/api/events`;
+        const eventsUrl = buildEventsUrl(null, userKeywords);
         const requestStartedAt = Date.now();
         const res = await fetchWithRetry(eventsUrl);
         console.log(
-          `Scope: fetch response ${res.status} ${res.statusText || ''} in ${Date.now() - requestStartedAt}ms`
+          `Forecast: fetch response ${res.status} ${res.statusText || ''} in ${Date.now() - requestStartedAt}ms`
         );
         if (!res.ok) throw new Error(`Backend error: HTTP ${res.status}`);
         const parseStartedAt = Date.now();
         const data = await res.json();
-        console.log(`Scope: parsed ${data.length} events in ${Date.now() - parseStartedAt}ms`);
+        console.log(`Forecast: parsed ${data.length} events in ${Date.now() - parseStartedAt}ms`);
 
         setRawEvents(data);
         AsyncStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(data)).catch(() => {});
@@ -112,9 +116,9 @@ export function EventsProvider({ children }) {
 
         lastFetchedAt.current = fetchedAt;
         setError(null);
-        console.log(`Scope: fetched ${data.length} events from network`);
+        console.log(`Forecast: fetched ${data.length} events from network`);
       } catch (err) {
-        console.warn('Scope: network fetch failed —', err.message);
+        console.warn('Forecast: network fetch failed —', err.message);
         setRawEvents(prev => {
           if (prev.length === 0) setError(err.message);
           return prev;
@@ -123,8 +127,30 @@ export function EventsProvider({ children }) {
         setLoading(false);
       }
     })();
-  }, []); // runs once on mount — no dependency on keyword loading
+  }, [loadingKeywords]); // runs once after keywords are loaded from storage
 
+  // ── Re-fetch when keywords change (after initial load) ────────────────
+  const isFirstLoad = useRef(true);
+  useEffect(() => {
+    if (loadingKeywords) return;
+    if (isFirstLoad.current) { isFirstLoad.current = false; return; }
+
+    (async () => {
+      try {
+        const fetchedAt = new Date().toISOString();
+        const url = buildEventsUrl(null, userKeywords);
+        console.log(`Forecast: re-fetching with updated keywords`);
+        const res = await fetchWithRetry(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        setRawEvents(data);
+        AsyncStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(data)).catch(() => {});
+        AsyncStorage.setItem(EVENTS_CACHE_TIMESTAMP_KEY, fetchedAt).catch(() => {});
+        lastFetchedAt.current = fetchedAt;
+        console.log(`Forecast: re-scored ${data.length} events for new keywords`);
+      } catch (_) {}
+    })();
+  }, [userKeywords]);
 
   // ── Pull-to-refresh ───────────────────────────────────────────────────
   const refresh = useCallback(async () => {
@@ -132,18 +158,17 @@ export function EventsProvider({ children }) {
     try {
       const since = lastFetchedAt.current;
       const fetchedAt = new Date().toISOString();
-      const url = buildEventsUrl(since);
+      const url = buildEventsUrl(since, userKeywords);
 
-      console.log(`Scope: refresh start -> ${url}`);
+      console.log(`Forecast: refresh start -> ${url}`);
       const requestStartedAt = Date.now();
       const res = await fetchWithRetry(url);
       console.log(
-        `Scope: refresh response ${res.status} ${res.statusText || ''} in ${Date.now() - requestStartedAt}ms`
+        `Forecast: refresh response ${res.status} ${res.statusText || ''} in ${Date.now() - requestStartedAt}ms`
       );
       if (!res.ok) throw new Error(`Backend error: HTTP ${res.status}`);
-      const parseStartedAt = Date.now();
       const delta = await res.json();
-      console.log(`Scope: refresh parsed ${delta.length} events in ${Date.now() - parseStartedAt}ms`);
+      console.log(`Forecast: refresh parsed ${delta.length} events`);
 
       if (delta.length > 0) {
         setRawEvents(prev => {
@@ -154,17 +179,17 @@ export function EventsProvider({ children }) {
           AsyncStorage.setItem(EVENTS_CACHE_TIMESTAMP_KEY, fetchedAt).catch(() => {});
           return result;
         });
-        console.log(`Scope: merged ${delta.length} updated events`);
+        console.log(`Forecast: merged ${delta.length} updated events`);
       }
 
       lastFetchedAt.current = fetchedAt;
       setError(null);
     } catch (err) {
-      console.warn('Scope: refresh failed —', err.message);
+      console.warn('Forecast: refresh failed —', err.message);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [userKeywords]);
 
   // ── Persist keywords on change ────────────────────────────────────────
   function setUserKeywords(kws) {
@@ -172,9 +197,16 @@ export function EventsProvider({ children }) {
     AsyncStorage.setItem(KEYWORDS_STORAGE_KEY, JSON.stringify(kws)).catch(() => {});
   }
 
-  // ── Compute priorityScore client-side from keywords ───────────────────
+  // ── Combine server semantic score + client keyword score ──────────────
+  // keyword_score: exact match, synonyms, category affinity (fast, client-side)
+  // semantic_score: cosine similarity from fastembed (server-side, nuanced)
+  // final priorityScore = max of both so neither system can suppress the other
   const events = useMemo(
-    () => rawEvents.map(e => ({ ...e, priorityScore: calculateScore(e, userKeywords) })),
+    () => rawEvents.map(e => {
+      const keywordScore  = calculateScore(e, userKeywords);
+      const semanticScore = e.semantic_score ?? 0;
+      return { ...e, priorityScore: Math.max(keywordScore, semanticScore) };
+    }),
     [rawEvents, userKeywords]
   );
 

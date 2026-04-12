@@ -7,8 +7,8 @@ import * as SecureStore from 'expo-secure-store';
 WebBrowser.maybeCompleteAuthSession();
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.173.67.106:8000';
-const JWT_KEY         = '@scope_jwt';
-const ACCESS_TOKEN_KEY = '@scope_access_token';
+const JWT_KEY         = 'scope_jwt';
+const ACCESS_TOKEN_KEY = 'scope_access_token';
 
 const GOOGLE_SCOPES = [
   'openid',
@@ -24,16 +24,11 @@ const GOOGLE_DISCOVERY = {
   tokenEndpoint:         'https://oauth2.googleapis.com/token',
 };
 
-// The Expo auth proxy generates an https:// redirect URI that Google's
-// Web Application client accepts. It deep-links back to the app after auth.
-// Log this value and register it in Google Cloud Console → Authorized redirect URIs.
-// iOS OAuth: reverse the client ID to form the scheme.
-// e.g. "791707106408-xxxx.apps.googleusercontent.com" → "com.googleusercontent.apps.791707106408-xxxx"
-const IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
-const _reverseClientId = IOS_CLIENT_ID.split('.').reverse().join('.');
+// Native redirect URI for iOS OAuth client.
+// Google iOS client validates against the Bundle ID (edu.umd.scope), not an explicit URI list.
+// This scheme is registered in app.json as the app's URL scheme.
 const REDIRECT_URI = AuthSession.makeRedirectUri({
-  scheme: _reverseClientId,
-  path: 'oauth2redirect/google',
+  native: 'edu.umd.scope:/oauth2redirect/google',
 });
 console.log('[auth] Redirect URI:', REDIRECT_URI);
 
@@ -56,6 +51,7 @@ export function AuthProvider({ children }) {
     },
     GOOGLE_DISCOVERY,
   );
+
 
   // ── Handle OAuth response ────────────────────────────────────────────────
   useEffect(() => {
@@ -134,7 +130,7 @@ export function AuthProvider({ children }) {
 
   // ── Public API ────────────────────────────────────────────────────────────
   const signIn = useCallback(() => {
-    promptAsync({ useProxy: true });
+    promptAsync({ showInRecents: true });
   }, [promptAsync]);
 
   const signOut = useCallback(async () => {

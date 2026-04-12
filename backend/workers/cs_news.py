@@ -17,8 +17,9 @@ from typing import Any, Dict, List
 import feedparser
 
 from core.database import upsert_events
+from core.embedder import embedding_to_json, generate_embedding
 
-log = logging.getLogger("scope.cs_news")
+log = logging.getLogger("forecast.cs_news")
 
 CS_NEWS_FEED = "https://cs.umd.edu/feeds/news/all"
 
@@ -63,6 +64,12 @@ def fetch_and_sync() -> int:
             skipped += 1
             continue
 
+        try:
+            embedding = embedding_to_json(generate_embedding(title))
+        except Exception as emb_err:
+            log.warning("[cs_news] Embedding failed for '%s': %s", title, emb_err)
+            embedding = None
+
         records.append(
             {
                 "id":         _stable_id(link),
@@ -73,6 +80,7 @@ def fetch_and_sync() -> int:
                 "link":       link,
                 "location":   "Brendan Iribe Center for Computer Science and Engineering",
                 "source":     "cs_news",
+                "embedding":  embedding,
             }
         )
 

@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
-log = logging.getLogger("scope.discord")
+log = logging.getLogger("forecast.discord")
 
 # Load environment variables first so ai_parser can see them on import
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
@@ -14,6 +14,7 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 # Ensure we can import from core (assuming working directory might vary)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core import database, ai_parser, geocoder
+from core.database import upsert_deadline
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -70,7 +71,7 @@ class ReviewView(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
 
-class ScopeBot(commands.Bot):
+class ForecastBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True 
@@ -85,7 +86,7 @@ class ScopeBot(commands.Bot):
         # await self.tree.sync()
         log.info("[discord] Bot setup complete (slash commands not re-synced).")
 
-bot = ScopeBot()
+bot = ForecastBot()
 
 
 @bot.event
@@ -126,6 +127,20 @@ async def on_message(message: discord.Message):
             None,
             lambda: ai_parser.extract_event(message.content, img_bytes, mime_type)
         )
+
+        if event_data:
+            # If a deadline was extracted, write it immediately (no review required)
+            if event_data.get("deadline_time"):
+                upsert_deadline(
+                    title         = event_data.get("title") or "Unknown",
+                    source        = "discord",
+                    link          = event_data.get("link") or message.jump_url,
+                    deadline_time = event_data["deadline_time"],
+                )
+                log.info(
+                    "[discord] Saved deadline: '%s' due %s.",
+                    event_data.get("title"), event_data["deadline_time"],
+                )
 
         if event_data and event_data.get("location"):
             log.info(

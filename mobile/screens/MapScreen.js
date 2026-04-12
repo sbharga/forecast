@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
 
   fabContainer: {
-    position: 'absolute', right: 16, bottom: 200,
+    position: 'absolute', right: 16, bottom: 120,
   },
   fab: {
     width: 50, height: 50, borderRadius: 25,
@@ -408,16 +408,18 @@ const styles = StyleSheet.create({
   },
 
   sliderContainer: {
-    position: 'absolute', bottom: 32, left: 12, right: 12,
-    backgroundColor: '#fff', borderRadius: 22,
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 22, borderTopRightRadius: 22,
+    borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
     paddingTop: 14, paddingBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.13, shadowRadius: 16, elevation: 10,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08, shadowRadius: 12, elevation: 10,
   },
   sliderRow: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     paddingTop: 2,
     paddingBottom: 4,
   },

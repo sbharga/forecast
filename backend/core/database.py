@@ -90,6 +90,21 @@ def init_db() -> None:
         cur.execute(
             "CREATE INDEX IF NOT EXISTS users_google_sub_idx ON users (google_sub)"
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS deadlines (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                title        TEXT    NOT NULL,
+                source       TEXT    NOT NULL DEFAULT 'discord',
+                link         TEXT    NOT NULL DEFAULT '',
+                deadline_time TEXT   NOT NULL,
+                created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+            )
+            """
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS deadlines_time_idx ON deadlines (deadline_time)"
+        )
 
 
 # ── Write ──────────────────────────────────────────────────────────────────
@@ -221,6 +236,31 @@ def get_events_channel(guild_id: int) -> Optional[int]:
         return row["events_channel_id"] if row else None
 
 
+# ── Deadlines ─────────────────────────────────────────────────────────────
+
+def upsert_deadline(title: str, source: str, link: str, deadline_time: str) -> int:
+    """Insert a deadline row. Returns the new row id."""
+    with _cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO deadlines (title, source, link, deadline_time)
+            VALUES (?, ?, ?, ?)
+            """,
+            (title, source, link, deadline_time),
+        )
+        return cur.lastrowid
+
+
+def get_upcoming_deadlines() -> List[Dict[str, Any]]:
+    """Return all future deadlines ordered by deadline_time ASC."""
+    with _cursor() as cur:
+        cur.execute(
+            "SELECT id, title, source, link, deadline_time "
+            "FROM deadlines WHERE deadline_time >= datetime('now') ORDER BY deadline_time"
+        )
+        return [dict(r) for r in cur.fetchall()]
+
+
 # ── Users ──────────────────────────────────────────────────────────────────
 
 def upsert_user(google_sub: str, email: str, name: Optional[str], refresh_token: Optional[str]) -> Dict[str, Any]:
@@ -248,6 +288,15 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
         row = cur.fetchone()
         return dict(row) if row else None
+
+
+def update_last_gmail_sync(user_id: int, sync_time: str) -> None:
+    """Record the ISO-8601 timestamp of the most recent Gmail sync for a user."""
+    with _cursor() as cur:
+        cur.execute(
+            "UPDATE users SET last_gmail_sync = ?, updated_at = datetime('now') WHERE id = ?",
+            (sync_time, user_id),
+        )
 
 
 def get_all_users_with_refresh_tokens() -> List[Dict[str, Any]]:

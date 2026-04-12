@@ -24,7 +24,7 @@ const GREEN      = '#34C759';
 const STATIC_SOURCES = [
   { id: 'terplink', label: 'TerpLink',    detail: 'Syncing events',    connected: true  },
   { id: 'cs_news',  label: 'UMD CS News', detail: 'RSS feed active',   connected: true  },
-  { id: 'discord',  label: 'Discord',     detail: 'Bot temporarily disabled', connected: false },
+  { id: 'discord',  label: 'Discord',     detail: 'Listening for events',     connected: true  },
 ];
 
 // ─── Screen ────────────────────────────────────────────────────────────────

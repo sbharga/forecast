@@ -1,5 +1,5 @@
 """
-workers/terplink.py — Fetch events from TerpLink and write to Supabase.
+workers/terplink.py — Fetch events from TerpLink and write to SQLite.
 
 Run manually:   python -m workers.terplink
 Run on a cron:  add to crontab or a scheduler (e.g., every 30 min)
@@ -38,10 +38,10 @@ def _normalize_time(raw: str) -> str:
         return raw
 
 
-def fetch_and_sync(limit: int = 100) -> int:
+def fetch_and_sync(limit: int = 200) -> int:
     """
     Pull up to `limit` approved events from TerpLink, geocode them,
-    and upsert into Supabase. Returns the number of events written.
+    and upsert into SQLite. Returns the number of events written.
     """
     print(f"[terplink] Fetching up to {limit} events from TerpLink...")
 
@@ -86,7 +86,7 @@ def fetch_and_sync(limit: int = 100) -> int:
         )
 
     written = upsert_events(map_ready)
-    print(f"[terplink] Upserted {written} map-ready events to Supabase.")
+    print(f"[terplink] Upserted {written} map-ready events to scope.db.")
     return written
 
 

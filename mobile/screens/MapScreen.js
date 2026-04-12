@@ -62,14 +62,23 @@ const MAP_STYLE = [
 ];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-function buildDateSlider(days = 7) {
+
+/** Returns a YYYY-MM-DD key in the device's local timezone. */
+function toLocalDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function buildDateSlider(days = 6) {
   const result = [];
   const today  = new Date();
   for (let i = 0; i < days; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     result.push({
-      key:     d.toISOString().split('T')[0],
+      key:     toLocalDateKey(d),
       weekday: i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' }),
       day:     d.getDate(),
     });
@@ -87,7 +96,7 @@ function relativeTime(isoString) {
   return `Starts in ${Math.floor(hrs / 24)}d`;
 }
 
-const DATE_SLIDER = buildDateSlider(7);
+const DATE_SLIDER = buildDateSlider(6);
 
 // ─── Component ─────────────────────────────────────────────────────────────
 export default function MapScreen() {
@@ -103,7 +112,7 @@ export default function MapScreen() {
     const { focusEvent, focusTimestamp } = route.params || {};
     if (!focusEvent) return;
     // Update date filter so the focused event's marker is visible
-    const eventDate = focusEvent.start_time.split('T')[0];
+    const eventDate = toLocalDateKey(new Date(focusEvent.start_time));
     setSelectedDate(eventDate);
     setSelectedEvent(focusEvent);
     mapRef.current?.animateToRegion(
@@ -117,7 +126,9 @@ export default function MapScreen() {
     );
   }, [route.params?.focusTimestamp]);
 
-  const filteredEvents = events.filter(e => e.start_time.startsWith(selectedDate));
+  const filteredEvents = events.filter(
+    e => toLocalDateKey(new Date(e.start_time)) === selectedDate
+  );
 
   return (
     <View style={styles.root}>
@@ -197,7 +208,7 @@ export default function MapScreen() {
         >
           {DATE_SLIDER.map(item => {
             const active = item.key === selectedDate;
-            const count  = events.filter(e => e.start_time.startsWith(item.key)).length;
+            const count  = events.filter(e => toLocalDateKey(new Date(e.start_time)) === item.key).length;
             return (
               <TouchableOpacity
                 key={item.key}

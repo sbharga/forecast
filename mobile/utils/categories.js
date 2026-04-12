@@ -9,17 +9,21 @@
 export const CATEGORIES = {
   career:   { label: 'Career',     color: '#FF9500' }, // orange
   tech:     { label: 'Tech',       color: '#007AFF' }, // blue
-  academic: { label: 'Academic',   color: '#5856D6' }, // purple
+  academic: { label: 'Academic',   color: '#5856D6' }, // indigo
   social:   { label: 'Social',     color: '#34C759' }, // green
   news:     { label: 'Newsletter', color: '#FF2D55' }, // pink/red
+  discord:  { label: 'Discord',    color: '#7C3AED' }, // purple
   other:    { label: 'Other',      color: '#8E8E93' }, // grey
 };
 
 // Keywords that map to a category (checked in order)
 const RULES = [
   {
+    category: 'discord',
+    sources: ['discord'],
+  },
+  {
     category: 'news',
-    // Any CS-news-sourced event is "newsletter"
     sources: ['cs_news'],
   },
   {

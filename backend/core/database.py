@@ -112,16 +112,8 @@ def upsert_events(events: List[Dict[str, Any]]) -> int:
 
 # ── Read ───────────────────────────────────────────────────────────────────
 
-def get_upcoming_events() -> List[Dict[str, Any]]:
-    """Return all future events with valid coordinates, ordered by start_time."""
-    with _cursor() as cur:
-        cur.execute(
-            "SELECT id, title, lat, lng, start_time, link, location, source "
-            "FROM events ORDER BY start_time"
-        )
-        rows = [dict(r) for r in cur.fetchall()]
-
-    # Filter to future events in Python to avoid SQLite timezone quirks
+def _filter_future(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Keep only rows whose start_time is in the future."""
     now = datetime.now(timezone.utc)
     result = []
     for r in rows:
@@ -134,6 +126,32 @@ def get_upcoming_events() -> List[Dict[str, Any]]:
         except ValueError:
             result.append(r)  # include if unparseable rather than silently drop
     return result
+
+
+def get_upcoming_events() -> List[Dict[str, Any]]:
+    """Return all future events ordered by start_time."""
+    with _cursor() as cur:
+        cur.execute(
+            "SELECT id, title, lat, lng, start_time, link, location, source "
+            "FROM events ORDER BY start_time"
+        )
+        rows = [dict(r) for r in cur.fetchall()]
+    return _filter_future(rows)
+
+
+def get_events_since(since: datetime) -> List[Dict[str, Any]]:
+    """Return future events updated after `since`, ordered by start_time."""
+    if since.tzinfo is None:
+        since = since.replace(tzinfo=timezone.utc)
+    since_str = since.isoformat()
+    with _cursor() as cur:
+        cur.execute(
+            "SELECT id, title, lat, lng, start_time, link, location, source "
+            "FROM events WHERE updated_at > ? ORDER BY start_time",
+            (since_str,),
+        )
+        rows = [dict(r) for r in cur.fetchall()]
+    return _filter_future(rows)
 
 
 # ── Guild Settings ─────────────────────────────────────────────────────────

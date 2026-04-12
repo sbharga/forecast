@@ -8,6 +8,7 @@ Start:  uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 import asyncio
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -15,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from core.database import get_upcoming_events, init_db
+from core.database import get_upcoming_events, get_events_since, init_db
 from workers.discord import bot
 
 load_dotenv()
@@ -61,13 +62,22 @@ class Event(BaseModel):
 
 
 @app.get("/api/events", response_model=List[Event])
-def get_events():
+def get_events(since: Optional[str] = None):
     """
-    Return all upcoming geocoded events from the database.
-    Run workers/terplink.py first to populate data.
+    Return upcoming events from the database.
+    Pass ?since=<iso_timestamp> to get only events updated after that time (delta sync).
+    Omit for a full load.
     """
     try:
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid 'since' timestamp — use ISO 8601 format")
+            return get_events_since(since_dt)
         return get_upcoming_events()
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 

@@ -3,7 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Platform,
-  ScrollView,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -40,7 +40,7 @@ function formatDateTime(isoString) {
   );
 }
 
-// ─── Top Pick Card (horizontal carousel) ──────────────────────────────────
+// ─── Top Pick Card (vertical section) ─────────────────────────────────────
 function TopPickCard({ event, onViewOnMap }) {
   const cat      = categorizeEvent(event);
   const catColor = CATEGORIES[cat].color;
@@ -48,11 +48,11 @@ function TopPickCard({ event, onViewOnMap }) {
 
   return (
     <View style={styles.topPickCard}>
-      <View style={[styles.topPickBanner, { backgroundColor: catColor + '18', borderLeftColor: catColor }]}>
-        <Text style={[styles.topPickBannerText, { color: catColor }]}>{catLabel}</Text>
-        <View style={[styles.scorePill, { backgroundColor: catColor + '22' }]}>
-          <Zap size={9} color={catColor} />
-          <Text style={[styles.scorePillText, { color: catColor }]}>{event.priorityScore}</Text>
+      <View style={[styles.topPickBanner, { backgroundColor: catColor }]}>
+        <Text style={styles.topPickBannerText}>{catLabel}</Text>
+        <View style={styles.scorePill}>
+          <Zap size={9} color="rgba(255,255,255,0.85)" />
+          <Text style={styles.scorePillText}>{event.priorityScore}</Text>
         </View>
       </View>
       <View style={styles.topPickBody}>
@@ -80,12 +80,12 @@ function EventCard({ event, onViewOnMap }) {
   return (
     <View style={styles.card}>
       {/* Category banner strip */}
-      <View style={[styles.categoryBanner, { backgroundColor: catColor + '18', borderLeftColor: catColor }]}>
-        <Text style={[styles.categoryBannerText, { color: catColor }]}>{catLabel}</Text>
+      <View style={[styles.categoryBanner, { backgroundColor: catColor }]}>
+        <Text style={styles.categoryBannerText}>{catLabel}</Text>
         {event.priorityScore > 0 && (
-          <View style={[styles.scorePill, { backgroundColor: catColor + '22' }]}>
-            <Zap size={9} color={catColor} />
-            <Text style={[styles.scorePillText, { color: catColor }]}>{event.priorityScore}</Text>
+          <View style={styles.scorePill}>
+            <Zap size={9} color="rgba(255,255,255,0.85)" />
+            <Text style={styles.scorePillText}>{event.priorityScore}</Text>
           </View>
         )}
       </View>
@@ -121,7 +121,7 @@ function EventCard({ event, onViewOnMap }) {
 
 // ─── Screen ────────────────────────────────────────────────────────────────
 export default function FeedScreen() {
-  const { events, loading, error, userKeywords } = useEvents();
+  const { events, loading, refreshing, error, refresh, userKeywords } = useEvents();
   const navigation = useNavigation();
   const [query,  setQuery]  = useState('');
   const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'time'
@@ -205,15 +205,11 @@ export default function FeedScreen() {
         <Text style={styles.errorText}>⚠ {error}</Text>
       )}
 
-      {/* ── Top Picks carousel ──────────────────────────────────────── */}
+      {/* ── Top Picks section ───────────────────────────────────────── */}
       {!loading && !error && showTopPicks && (
         <View style={styles.topPicksSection}>
           <Text style={styles.topPicksHeader}>TOP PICKS FOR YOU</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.topPicksScroll}
-          >
+          <View style={styles.topPicksList}>
             {topPicks.map(event => (
               <TopPickCard
                 key={event.id}
@@ -221,7 +217,7 @@ export default function FeedScreen() {
                 onViewOnMap={() => handleViewOnMap(event)}
               />
             ))}
-          </ScrollView>
+          </View>
         </View>
       )}
 
@@ -232,6 +228,13 @@ export default function FeedScreen() {
           keyExtractor={item => String(item.id)}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor={SCOPE_BLUE}
+            />
+          }
           ListEmptyComponent={
             <Text style={styles.emptyText}>
               {query ? 'No events match your search.' : 'No upcoming events.'}
@@ -297,16 +300,15 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, color: INK },
 
   // ── Top Picks ─────────────────────────────────────────────────────────
-  topPicksSection: { marginBottom: 4 },
+  topPicksSection: { marginBottom: 8 },
   topPicksHeader: {
     fontSize: 11, fontWeight: '700', color: SLATE,
     letterSpacing: 0.8, textTransform: 'uppercase',
     marginLeft: 20, marginBottom: 10,
   },
-  topPicksScroll: { paddingHorizontal: 16, gap: 12 },
+  topPicksList: { paddingHorizontal: 16, gap: 16 },
 
   topPickCard: {
-    width: 220,
     backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
@@ -320,28 +322,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderLeftWidth: 3,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  topPickBannerText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
-  topPickBody:       { padding: 12 },
-  topPickTitle:      { fontSize: 14, fontWeight: '600', color: INK, lineHeight: 19, marginBottom: 8 },
-  topPickMeta:       { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 },
-  topPickMetaText:   { fontSize: 11, color: SLATE, flex: 1 },
+  topPickBannerText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: '#fff' },
+  topPickBody:       { padding: 14 },
+  topPickTitle:      { fontSize: 15, fontWeight: '600', color: INK, lineHeight: 21, marginBottom: 8 },
+  topPickMeta:       { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 12 },
+  topPickMetaText:   { fontSize: 12, color: SLATE, flex: 1 },
   topPickMapBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     alignSelf: 'flex-start',
-    paddingHorizontal: 10, paddingVertical: 5,
+    paddingHorizontal: 10, paddingVertical: 6,
     borderRadius: 8, backgroundColor: SCOPE_BLUE + '12',
   },
-  topPickMapBtnText: { fontSize: 11, fontWeight: '600', color: SCOPE_BLUE },
+  topPickMapBtnText: { fontSize: 12, fontWeight: '600', color: SCOPE_BLUE },
 
   scorePill: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  scorePillText: { fontSize: 10, fontWeight: '700' },
+  scorePillText: { fontSize: 10, fontWeight: '700', color: '#fff' },
 
   // ── Main list ─────────────────────────────────────────────────────────
   listContent: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 4 },
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 0,
     paddingBottom: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
@@ -364,15 +366,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderLeftWidth: 3,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     marginHorizontal: -16,
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   categoryBannerText: {
-    fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase',
+    fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: '#fff',
   },
 
   cardHeader: {

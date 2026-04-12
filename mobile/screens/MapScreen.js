@@ -14,11 +14,11 @@ import { Dimensions } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRoute } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { Calendar, ExternalLink, MapPin, Navigation, X } from 'lucide-react-native';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
+import { Calendar, CalendarCheck, ExternalLink, MapPin, Navigation, X } from 'lucide-react-native';
 import { useEvents } from '../contexts/EventsContext';
+import { useAuth } from '../contexts/AuthContext';
 import { CATEGORIES, categorizeEvent } from '../utils/categories';
+import { addEventToCalendar } from '../utils/calendar';
 
 // ─── Map ───────────────────────────────────────────────────────────────────
 const CAMPUS_CENTER = { latitude: 38.9869, longitude: -76.9426 };
@@ -103,11 +103,14 @@ const DATE_SLIDER = buildDateSlider(7);
 // ─── Component ─────────────────────────────────────────────────────────────
 export default function MapScreen() {
   const { events, loading, error, userKeywords } = useEvents();
+  const { user, accessToken, signIn } = useAuth();
   const route  = useRoute();
   const mapRef = useRef(null);
 
-  const [selectedDate,  setSelectedDate]  = useState(DATE_SLIDER[0].key);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDate,   setSelectedDate]   = useState(DATE_SLIDER[0].key);
+  const [selectedEvent,  setSelectedEvent]  = useState(null);
+  // keyed by event.id: 'idle' | 'loading' | 'added' | 'error'
+  const [calendarStates, setCalendarStates] = useState({});
 
   // ── Respond to "View on Map" taps from FeedScreen ────────────────────
   useEffect(() => {
@@ -127,6 +130,21 @@ export default function MapScreen() {
       600
     );
   }, [route.params?.focusTimestamp]);
+
+  async function handleAddToCalendar(event) {
+    if (!user) {
+      signIn();
+      return;
+    }
+    setCalendarStates(prev => ({ ...prev, [event.id]: 'loading' }));
+    try {
+      await addEventToCalendar(event, accessToken);
+      setCalendarStates(prev => ({ ...prev, [event.id]: 'added' }));
+    } catch (e) {
+      console.warn('Calendar add failed:', e.message);
+      setCalendarStates(prev => ({ ...prev, [event.id]: 'error' }));
+    }
+  }
 
   const filteredEvents = events.filter(e => {
     if (toLocalDateKey(new Date(e.start_time)) !== selectedDate) return false;
@@ -320,6 +338,33 @@ export default function MapScreen() {
                       : 'View on TerpLink'}
                   </Text>
                 </TouchableOpacity>
+
+                {(() => {
+                  const calState = calendarStates[selectedEvent.id] || 'idle';
+                  const isAdded  = calState === 'added';
+                  const isBusy   = calState === 'loading';
+                  return (
+                    <TouchableOpacity
+                      style={[styles.calendarBtn, isAdded && styles.calendarBtnAdded]}
+                      onPress={() => handleAddToCalendar(selectedEvent)}
+                      disabled={isBusy || isAdded}
+                      activeOpacity={0.75}
+                    >
+                      <CalendarCheck size={16} color={isAdded ? '#34C759' : SCOPE_BLUE} />
+                      <Text style={[styles.calendarBtnText, isAdded && styles.calendarBtnTextAdded]}>
+                        {!user
+                          ? 'Sign in to Save'
+                          : isAdded
+                          ? 'Added to Calendar'
+                          : isBusy
+                          ? 'Adding…'
+                          : calState === 'error'
+                          ? 'Retry'
+                          : 'Add to My Calendar'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })()}
               </View>
             </View>
           );
@@ -435,4 +480,15 @@ const styles = StyleSheet.create({
     gap: 8, marginTop: 20, borderRadius: 16, paddingVertical: 16,
   },
   ctaBtnText: { fontSize: 15, fontWeight: '700', color: '#fff', letterSpacing: 0.2 },
+
+  calendarBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, marginTop: 10, borderRadius: 16, paddingVertical: 14,
+    borderWidth: 1.5, borderColor: SCOPE_BLUE, backgroundColor: '#fff',
+  },
+  calendarBtnAdded: {
+    borderColor: '#34C759', backgroundColor: '#F0FDF4',
+  },
+  calendarBtnText: { fontSize: 15, fontWeight: '600', color: SCOPE_BLUE, letterSpacing: 0.2 },
+  calendarBtnTextAdded: { color: '#34C759' },
 });

@@ -10,20 +10,22 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
-from core.database import get_upcoming_events, get_events_since, init_db
+from api.routes.auth import router as auth_router
+from core.database import get_events_since, get_upcoming_events, init_db
+from workers.gmail_sync import run_gmail_sync_loop
 
 load_dotenv()
 
 # Temporary local switch: keep the API running without starting the Discord bot.
-DISCORD_BOT_ENABLED = False
+DISCORD_BOT_ENABLED = True
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,29 +41,40 @@ async def lifespan(app: FastAPI):
     init_db()
     log.info("[api] Database ready.")
 
-    if not DISCORD_BOT_ENABLED:
-        log.warning("[api] Discord bot startup is temporarily disabled.")
-        yield
-        return
-
-    bot_token = os.environ.get("DISCORD_BOT_TOKEN")
     bot_task = None
-    if bot_token:
-        from workers.discord import bot
+    if DISCORD_BOT_ENABLED:
+        bot_token = os.environ.get("DISCORD_BOT_TOKEN")
+        if bot_token:
+            from workers.discord import bot
 
-        log.info("[api] Starting Discord bot…")
-        bot_task = asyncio.create_task(bot.start(bot_token))
+            log.info("[api] Starting Discord bot…")
+            bot_task = asyncio.create_task(bot.start(bot_token))
+        else:
+            log.warning("[api] DISCORD_BOT_TOKEN not set — bot will not start.")
     else:
-        log.warning("[api] DISCORD_BOT_TOKEN not set — bot will not start.")
+        log.warning("[api] Discord bot startup is temporarily disabled.")
+
+    log.info("[api] Starting Gmail sync loop…")
+    gmail_task = asyncio.create_task(run_gmail_sync_loop())
 
     yield
 
     if bot_task:
         log.info("[api] Shutting down Discord bot…")
+        from workers.discord import bot
+
         await bot.close()
+
+    gmail_task.cancel()
+    try:
+        await gmail_task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(title="Scope API", version="0.7.0", lifespan=lifespan)
+
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -93,7 +106,7 @@ def get_events(since: Optional[str] = None):
     try:
         if since:
             try:
-                since_dt = datetime.fromisoformat(since.replace('Z', '+00:00'))
+                since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
             except ValueError:
                 log.warning("[api] Bad 'since' value: %s", since)
                 raise HTTPException(status_code=400, detail="Invalid 'since' timestamp — use ISO 8601 format")
@@ -108,14 +121,14 @@ def get_events(since: Optional[str] = None):
 
         return [
             {
-                "id":         row["id"],
-                "title":      row["title"],
-                "lat":        row["lat"],
-                "lng":        row["lng"],
+                "id": row["id"],
+                "title": row["title"],
+                "lat": row["lat"],
+                "lng": row["lng"],
                 "start_time": row["start_time"],
-                "link":       row["link"],
-                "location":   row.get("location"),
-                "source":     row.get("source"),
+                "link": row["link"],
+                "location": row.get("location"),
+                "source": row.get("source"),
             }
             for row in rows
         ]

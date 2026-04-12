@@ -23,7 +23,7 @@ const GREEN      = '#34C759';
 const SOURCES = [
   { id: 'terplink', label: 'TerpLink',      detail: 'Syncing events',      connected: true  },
   { id: 'cs_news',  label: 'UMD CS News',   detail: 'RSS feed active',     connected: true  },
-  { id: 'discord',  label: 'Discord',       detail: 'Bot not connected',   connected: false },
+  { id: 'discord',  label: 'Discord',       detail: 'Bot active',          connected: true  },
   { id: 'gmail',    label: 'Gmail',         detail: 'Not configured',      connected: false },
 ];
 

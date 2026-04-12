@@ -6,9 +6,11 @@ Start:  uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 """
 
 import asyncio
+import logging
 import os
+import time
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -17,29 +19,49 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from core.database import get_upcoming_events, get_events_since, init_db
-from workers.discord import bot
 
 load_dotenv()
+
+# Temporary local switch: keep the API running without starting the Discord bot.
+DISCORD_BOT_ENABLED = False
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("scope.api")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    log.info("[api] Initializing database…")
     init_db()
-    
-    # Start bot
+    log.info("[api] Database ready.")
+
+    if not DISCORD_BOT_ENABLED:
+        log.warning("[api] Discord bot startup is temporarily disabled.")
+        yield
+        return
+
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
     bot_task = None
     if bot_token:
+        from workers.discord import bot
+
+        log.info("[api] Starting Discord bot…")
         bot_task = asyncio.create_task(bot.start(bot_token))
-        
+    else:
+        log.warning("[api] DISCORD_BOT_TOKEN not set — bot will not start.")
+
     yield
-    
-    # Cleanup
+
     if bot_task:
+        log.info("[api] Shutting down Discord bot…")
         await bot.close()
 
 
-app = FastAPI(title="Scope API", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="Scope API", version="0.7.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -65,20 +87,43 @@ class Event(BaseModel):
 def get_events(since: Optional[str] = None):
     """
     Return upcoming events from the database.
-    Pass ?since=<iso_timestamp> to get only events updated after that time (delta sync).
-    Omit for a full load.
+    ?since=<iso>  — delta sync, only events updated after this timestamp
     """
+    t0 = time.perf_counter()
     try:
         if since:
             try:
-                since_dt = datetime.fromisoformat(since)
+                since_dt = datetime.fromisoformat(since.replace('Z', '+00:00'))
             except ValueError:
+                log.warning("[api] Bad 'since' value: %s", since)
                 raise HTTPException(status_code=400, detail="Invalid 'since' timestamp — use ISO 8601 format")
-            return get_events_since(since_dt)
-        return get_upcoming_events()
+            rows = get_events_since(since_dt)
+            mode = f"delta since={since_dt.isoformat()}"
+        else:
+            rows = get_upcoming_events()
+            mode = "full"
+
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        log.info("[api] GET /api/events  mode=%-6s  rows=%d  %.1fms", mode, len(rows), elapsed_ms)
+
+        return [
+            {
+                "id":         row["id"],
+                "title":      row["title"],
+                "lat":        row["lat"],
+                "lng":        row["lng"],
+                "start_time": row["start_time"],
+                "link":       row["link"],
+                "location":   row.get("location"),
+                "source":     row.get("source"),
+            }
+            for row in rows
+        ]
+
     except HTTPException:
         raise
     except Exception as e:
+        log.exception("[api] Database error in GET /api/events")
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 

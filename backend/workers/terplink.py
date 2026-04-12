@@ -5,7 +5,8 @@ Run manually:   python -m workers.terplink
 Run on a cron:  add to crontab or a scheduler (e.g., every 30 min)
 """
 
-import sys
+import logging
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -13,6 +14,8 @@ import requests
 
 from core.database import upsert_events
 from core.geocoder import get_coordinates
+
+log = logging.getLogger("scope.terplink")
 
 TERPLINK_URL = "https://terplink.umd.edu/api/discovery/event/search"
 
@@ -43,7 +46,8 @@ def fetch_and_sync(limit: int = 300) -> int:
     Pull up to `limit` approved events from TerpLink, geocode them,
     and upsert into SQLite. Returns the number of events written.
     """
-    print(f"[terplink] Fetching up to {limit} events from TerpLink...")
+    t0 = time.perf_counter()
+    log.info("[terplink] Fetching up to %d events from TerpLink…", limit)
 
     try:
         resp = requests.get(
@@ -54,28 +58,32 @@ def fetch_and_sync(limit: int = 300) -> int:
         )
         resp.raise_for_status()
     except requests.Timeout:
-        print("[terplink] ERROR: Request timed out.", file=sys.stderr)
+        log.error("[terplink] Request timed out after 10s.")
         return 0
     except requests.HTTPError as e:
-        print(f"[terplink] ERROR: HTTP {e.response.status_code}", file=sys.stderr)
+        log.error("[terplink] HTTP %d from TerpLink.", e.response.status_code)
         return 0
 
     raw_events = resp.json().get("value", [])
-    print(f"[terplink] Got {len(raw_events)} raw events. Geocoding...")
+    log.info("[terplink] Received %d raw events. Geocoding…", len(raw_events))
 
     map_ready: List[Dict[str, Any]] = []
+    skipped = 0
     for e in raw_events:
         location = (e.get("location") or "").strip()
         coords = get_coordinates(location)
         if coords is None:
+            skipped += 1
             continue
 
         lat, lng = coords
         event_id = e.get("id")
+        title = (e.get("name") or "").strip()
+
         map_ready.append(
             {
                 "id":         event_id,
-                "title":      (e.get("name") or "").strip(),
+                "title":      title,
                 "lat":        lat,
                 "lng":        lng,
                 "start_time": _normalize_time(e.get("startsOn", "")),
@@ -85,10 +93,16 @@ def fetch_and_sync(limit: int = 300) -> int:
             }
         )
 
+    log.info("[terplink] Geocoded %d events (%d skipped — no coords).", len(map_ready), skipped)
+
     written = upsert_events(map_ready)
-    print(f"[terplink] Upserted {written} map-ready events to scope.db.")
+    elapsed = time.perf_counter() - t0
+    log.info("[terplink] Done. Upserted %d events in %.1fs.", written, elapsed)
     return written
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s", datefmt="%H:%M:%S")
+    from core.database import init_db
+    init_db()
     fetch_and_sync()

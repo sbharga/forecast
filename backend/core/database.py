@@ -5,6 +5,7 @@ The database file lives at backend/scope.db (created automatically on first run)
 No environment variables required.
 """
 
+import json
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -58,6 +59,11 @@ def init_db() -> None:
         cur.execute(
             "CREATE INDEX IF NOT EXISTS events_start_time_idx ON events (start_time)"
         )
+        # Additive migration — safe on existing DBs
+        try:
+            cur.execute("ALTER TABLE events ADD COLUMN embedding TEXT")
+        except Exception:
+            pass  # column already exists
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS guild_settings (
@@ -81,8 +87,8 @@ def upsert_events(events: List[Dict[str, Any]]) -> int:
     with _cursor() as cur:
         cur.executemany(
             """
-            INSERT INTO events (id, title, lat, lng, start_time, link, location, source, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            INSERT INTO events (id, title, lat, lng, start_time, link, location, source, embedding, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
             ON CONFLICT(id) DO UPDATE SET
                 title      = excluded.title,
                 lat        = excluded.lat,
@@ -91,6 +97,7 @@ def upsert_events(events: List[Dict[str, Any]]) -> int:
                 link       = excluded.link,
                 location   = excluded.location,
                 source     = excluded.source,
+                embedding  = COALESCE(excluded.embedding, events.embedding),
                 updated_at = datetime('now')
             """,
             [
@@ -103,6 +110,7 @@ def upsert_events(events: List[Dict[str, Any]]) -> int:
                     e["link"],
                     e.get("location"),
                     e.get("source", "terplink"),
+                    e.get("embedding"),
                 )
                 for e in events
             ],
@@ -133,10 +141,9 @@ def get_upcoming_events() -> List[Dict[str, Any]]:
     with _cursor() as cur:
         cur.execute(
             "SELECT id, title, lat, lng, start_time, link, location, source "
-            "FROM events ORDER BY start_time"
+            "FROM events WHERE start_time >= datetime('now') ORDER BY start_time"
         )
-        rows = [dict(r) for r in cur.fetchall()]
-    return _filter_future(rows)
+        return [dict(r) for r in cur.fetchall()]
 
 
 def get_events_since(since: datetime) -> List[Dict[str, Any]]:
@@ -147,11 +154,10 @@ def get_events_since(since: datetime) -> List[Dict[str, Any]]:
     with _cursor() as cur:
         cur.execute(
             "SELECT id, title, lat, lng, start_time, link, location, source "
-            "FROM events WHERE updated_at > ? ORDER BY start_time",
+            "FROM events WHERE updated_at > ? AND start_time >= datetime('now') ORDER BY start_time",
             (since_str,),
         )
-        rows = [dict(r) for r in cur.fetchall()]
-    return _filter_future(rows)
+        return [dict(r) for r in cur.fetchall()]
 
 
 # ── Guild Settings ─────────────────────────────────────────────────────────
@@ -168,6 +174,22 @@ def set_events_channel(guild_id: int, channel_id: int) -> None:
             """,
             (guild_id, channel_id),
         )
+
+
+def get_all_embeddings() -> Dict[int, List[float]]:
+    """
+    Return all stored event embeddings as {event_id: [float]}.
+    Called once at API startup to populate the in-memory embedding cache.
+    """
+    with _cursor() as cur:
+        cur.execute("SELECT id, embedding FROM events WHERE embedding IS NOT NULL")
+        result: Dict[int, List[float]] = {}
+        for row in cur.fetchall():
+            try:
+                result[row["id"]] = json.loads(row["embedding"])
+            except Exception:
+                pass
+    return result
 
 
 def get_events_channel(guild_id: int) -> Optional[int]:

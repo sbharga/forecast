@@ -9,11 +9,11 @@
 export const CATEGORIES = {
   career:   { label: 'Career',     color: '#FF9500' }, // orange
   tech:     { label: 'Tech',       color: '#007AFF' }, // blue
-  academic: { label: 'Academic',   color: '#5856D6' }, // indigo
+  academic: { label: 'Academic',   color: '#F59E0B' }, // amber
   social:   { label: 'Social',     color: '#34C759' }, // green
   news:     { label: 'Newsletter', color: '#FF2D55' }, // pink/red
   discord:  { label: 'Discord',    color: '#7C3AED' }, // purple
-  other:    { label: 'Other',      color: '#8E8E93' }, // grey
+  other:    { label: 'Other',      color: '#06B6D4' }, // cyan
 };
 
 // Keywords that map to a category (checked in order)
@@ -40,13 +40,14 @@ const RULES = [
   {
     category: 'academic',
     keywords: ['research', 'lecture', 'seminar', 'colloquium', 'symposium', 'thesis',
-               'dissertation', 'academic', 'professor', 'faculty', 'study', 'conference',
+               'dissertation', 'academic', 'professor', 'faculty', 'conference',
                'journal', 'paper', 'presentation'],
   },
   {
     category: 'social',
     keywords: ['social', 'mixer', 'party', 'game', 'fun', 'celebration', 'welcome', 'meet',
-               'picnic', 'cookout', 'trivia', 'open house', 'club', 'org', 'community'],
+               'picnic', 'cookout', 'trivia', 'open house', 'club', 'org', 'community',
+               'bible', 'faith', 'worship', 'prayer', 'ministry', 'chapel', 'religious', 'church'],
   },
 ];
 

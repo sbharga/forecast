@@ -3,7 +3,6 @@ import {
   Linking,
   Modal,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,10 +10,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRoute } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { Calendar, ExternalLink, MapPin, Navigation, X } from 'lucide-react-native';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 import { useEvents } from '../contexts/EventsContext';
 import { CATEGORIES, categorizeEvent } from '../utils/categories';
 
@@ -96,11 +98,11 @@ function relativeTime(isoString) {
   return `Starts in ${Math.floor(hrs / 24)}d`;
 }
 
-const DATE_SLIDER = buildDateSlider(6);
+const DATE_SLIDER = buildDateSlider(7);
 
 // ─── Component ─────────────────────────────────────────────────────────────
 export default function MapScreen() {
-  const { events, loading, error } = useEvents();
+  const { events, loading, error, userKeywords } = useEvents();
   const route  = useRoute();
   const mapRef = useRef(null);
 
@@ -126,9 +128,11 @@ export default function MapScreen() {
     );
   }, [route.params?.focusTimestamp]);
 
-  const filteredEvents = events.filter(
-    e => toLocalDateKey(new Date(e.start_time)) === selectedDate
-  );
+  const filteredEvents = events.filter(e => {
+    if (toLocalDateKey(new Date(e.start_time)) !== selectedDate) return false;
+    if (userKeywords.length > 0 && e.priorityScore === 0) return false;
+    return true;
+  });
 
   return (
     <View style={styles.root}>
@@ -201,14 +205,14 @@ export default function MapScreen() {
         {loading && <Text style={styles.statusLabel}>Loading events…</Text>}
         {error   && <Text style={styles.errorLabel}>⚠ {error}</Text>}
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sliderContent}
-        >
+        <View style={styles.sliderRow}>
           {DATE_SLIDER.map(item => {
             const active = item.key === selectedDate;
-            const count  = events.filter(e => toLocalDateKey(new Date(e.start_time)) === item.key).length;
+            const count  = events.filter(e => {
+              if (toLocalDateKey(new Date(e.start_time)) !== item.key) return false;
+              if (userKeywords.length > 0 && e.priorityScore === 0) return false;
+              return true;
+            }).length;
             return (
               <TouchableOpacity
                 key={item.key}
@@ -216,7 +220,7 @@ export default function MapScreen() {
                 style={[styles.datePill, active && styles.datePillActive]}
                 activeOpacity={0.75}
               >
-                <Text style={[styles.pillWeekday, active && styles.pillLabelActive]}>
+                <Text style={[styles.pillWeekday, active && styles.pillLabelActive]} numberOfLines={1}>
                   {item.weekday}
                 </Text>
                 <Text style={[styles.pillDay, active && styles.pillLabelActive]}>
@@ -232,7 +236,7 @@ export default function MapScreen() {
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
+        </View>
 
         {!loading && !error && filteredEvents.length === 0 && (
           <Text style={styles.emptyLabel}>No events on this day</Text>
@@ -250,59 +254,76 @@ export default function MapScreen() {
           <View style={styles.modalBackdrop} />
         </TouchableWithoutFeedback>
 
-        {selectedEvent && (
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
+        {selectedEvent && (() => {
+          const cat      = categorizeEvent(selectedEvent);
+          const catColor = CATEGORIES[cat].color;
+          const catLabel = CATEGORIES[cat].label;
+          const relTime  = relativeTime(selectedEvent.start_time);
+          return (
+            <View style={styles.modalSheet}>
+              {/* Drag handle */}
+              <View style={styles.modalHandle} />
 
-            <TouchableOpacity
-              style={styles.modalCloseBtn}
-              onPress={() => setSelectedEvent(null)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <X size={18} color={SLATE} />
-            </TouchableOpacity>
+              {/* Category color banner */}
+              <View style={[styles.modalBanner, { backgroundColor: catColor }]}>
+                <Text style={styles.modalBannerLabel}>{catLabel}</Text>
+                <TouchableOpacity
+                  onPress={() => setSelectedEvent(null)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={18} color="rgba(255,255,255,0.85)" />
+                </TouchableOpacity>
+              </View>
 
-            <View style={styles.relTimeBadge}>
-              <Calendar size={12} color={SCOPE_BLUE} />
-              <Text style={styles.relTimeBadgeText}>
-                {relativeTime(selectedEvent.start_time)}
-              </Text>
+              {/* Content */}
+              <View style={styles.modalContent}>
+                {relTime && (
+                  <View style={[styles.relTimeBadge, { borderColor: catColor + '40', backgroundColor: catColor + '12' }]}>
+                    <Calendar size={12} color={catColor} />
+                    <Text style={[styles.relTimeBadgeText, { color: catColor }]}>{relTime}</Text>
+                  </View>
+                )}
+
+                <Text style={styles.modalTitle} numberOfLines={3}>
+                  {selectedEvent.title}
+                </Text>
+
+                <View style={styles.modalRow}>
+                  <MapPin size={14} color={SLATE} />
+                  <Text style={styles.modalRowText} numberOfLines={1}>
+                    {selectedEvent.location || 'UMD Campus'}
+                  </Text>
+                </View>
+
+                <View style={styles.modalRow}>
+                  <Calendar size={14} color={SLATE} />
+                  <Text style={styles.modalRowText}>
+                    {new Date(selectedEvent.start_time).toLocaleDateString('en-US', {
+                      weekday: 'long', month: 'long', day: 'numeric',
+                    })}
+                    {'  ·  '}
+                    {new Date(selectedEvent.start_time).toLocaleTimeString('en-US', {
+                      hour: 'numeric', minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.ctaBtn, { backgroundColor: catColor }]}
+                  onPress={() => Linking.openURL(selectedEvent.link).catch(() => {})}
+                  activeOpacity={0.85}
+                >
+                  <ExternalLink size={16} color="#fff" />
+                  <Text style={styles.ctaBtnText}>
+                    {selectedEvent.source === 'discord' ? 'View on Discord'
+                      : selectedEvent.source === 'cs_news' ? 'Read Article'
+                      : 'View on TerpLink'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <Text style={styles.modalTitle} numberOfLines={3}>
-              {selectedEvent.title}
-            </Text>
-
-            <View style={styles.modalRow}>
-              <MapPin size={14} color={SLATE} />
-              <Text style={styles.modalRowText} numberOfLines={1}>
-                {selectedEvent.location || 'UMD Campus'}
-              </Text>
-            </View>
-
-            <View style={styles.modalRow}>
-              <Calendar size={14} color={SLATE} />
-              <Text style={styles.modalRowText}>
-                {new Date(selectedEvent.start_time).toLocaleDateString('en-US', {
-                  weekday: 'long', month: 'long', day: 'numeric',
-                })}
-                {'  ·  '}
-                {new Date(selectedEvent.start_time).toLocaleTimeString('en-US', {
-                  hour: 'numeric', minute: '2-digit',
-                })}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.ctaBtn}
-              onPress={() => Linking.openURL(selectedEvent.link).catch(() => {})}
-              activeOpacity={0.85}
-            >
-              <ExternalLink size={16} color="#fff" />
-              <Text style={styles.ctaBtnText}>View on TerpLink</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          );
+        })()}
       </Modal>
     </View>
   );
@@ -349,10 +370,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.13, shadowRadius: 16, elevation: 10,
   },
-  sliderContent: { paddingHorizontal: 14 },
+  sliderRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingTop: 2,
+    paddingBottom: 4,
+  },
   datePill: {
-    alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 16, backgroundColor: SURFACE, marginRight: 8, minWidth: 56,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: SURFACE,
+    marginHorizontal: 3,
   },
   datePillActive:      { backgroundColor: SCOPE_BLUE },
   pillWeekday:         { fontSize: 10, fontWeight: '600', color: SLATE, textTransform: 'uppercase', letterSpacing: 0.4 },
@@ -370,7 +400,7 @@ const styles = StyleSheet.create({
   modalSheet: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 26, borderTopRightRadius: 26,
-    paddingHorizontal: 24, paddingTop: 12,
+    overflow: 'hidden',
     paddingBottom: Platform.OS === 'ios' ? 40 : 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -6 },
@@ -378,21 +408,31 @@ const styles = StyleSheet.create({
   },
   modalHandle: {
     width: 40, height: 4, borderRadius: 2,
-    backgroundColor: '#E2E8F0', alignSelf: 'center', marginBottom: 20,
+    backgroundColor: '#E2E8F0', alignSelf: 'center',
+    marginTop: 10, marginBottom: 10,
   },
-  modalCloseBtn:  { position: 'absolute', top: 18, right: 20, padding: 6 },
+  modalBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingVertical: 12,
+  },
+  modalBannerLabel: {
+    fontSize: 12, fontWeight: '700', color: '#fff',
+    textTransform: 'uppercase', letterSpacing: 0.8,
+  },
+  modalContent:     { paddingHorizontal: 24, paddingTop: 16 },
   relTimeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: SCOPE_BLUE + '18', alignSelf: 'flex-start',
+    alignSelf: 'flex-start', borderWidth: 1,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, marginBottom: 12,
   },
-  relTimeBadgeText: { fontSize: 12, fontWeight: '600', color: SCOPE_BLUE },
+  relTimeBadgeText: { fontSize: 12, fontWeight: '600' },
   modalTitle:       { fontSize: 21, fontWeight: '700', color: INK, lineHeight: 28, marginBottom: 14 },
   modalRow:         { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   modalRowText:     { flex: 1, fontSize: 14, color: SLATE, lineHeight: 20 },
   ctaBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: 20, backgroundColor: SCOPE_BLUE, borderRadius: 16, paddingVertical: 16,
+    gap: 8, marginTop: 20, borderRadius: 16, paddingVertical: 16,
   },
   ctaBtnText: { fontSize: 15, fontWeight: '700', color: '#fff', letterSpacing: 0.2 },
 });

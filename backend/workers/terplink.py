@@ -38,7 +38,7 @@ def _normalize_time(raw: str) -> str:
         return raw
 
 
-def fetch_and_sync(limit: int = 200) -> int:
+def fetch_and_sync(limit: int = 300) -> int:
     """
     Pull up to `limit` approved events from TerpLink, geocode them,
     and upsert into SQLite. Returns the number of events written.

@@ -37,7 +37,7 @@ def _cursor():
 # ── Schema init ────────────────────────────────────────────────────────────
 
 def init_db() -> None:
-    """Create the events table if it doesn't exist. Called on API startup."""
+    """Create all tables if they don't exist. Called on API startup."""
     with _cursor() as cur:
         cur.execute(
             """
@@ -65,6 +65,24 @@ def init_db() -> None:
                 events_channel_id INTEGER NOT NULL
             )
             """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                google_sub         TEXT    NOT NULL UNIQUE,
+                email              TEXT    NOT NULL,
+                name               TEXT,
+                refresh_token      TEXT,
+                gmail_sync_enabled INTEGER NOT NULL DEFAULT 1,
+                last_gmail_sync    TEXT,
+                created_at         TEXT    NOT NULL DEFAULT (datetime('now')),
+                updated_at         TEXT    NOT NULL DEFAULT (datetime('now'))
+            )
+            """
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS users_google_sub_idx ON users (google_sub)"
         )
 
 
@@ -179,3 +197,41 @@ def get_events_channel(guild_id: int) -> Optional[int]:
         )
         row = cur.fetchone()
         return row["events_channel_id"] if row else None
+
+
+# ── Users ──────────────────────────────────────────────────────────────────
+
+def upsert_user(google_sub: str, email: str, name: Optional[str], refresh_token: Optional[str]) -> Dict[str, Any]:
+    """Insert or update a user by Google subject ID. Returns the user row."""
+    with _cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO users (google_sub, email, name, refresh_token, updated_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(google_sub) DO UPDATE SET
+                email         = excluded.email,
+                name          = excluded.name,
+                refresh_token = COALESCE(excluded.refresh_token, users.refresh_token),
+                updated_at    = datetime('now')
+            """,
+            (google_sub, email, name, refresh_token),
+        )
+        cur.execute("SELECT * FROM users WHERE google_sub = ?", (google_sub,))
+        return dict(cur.fetchone())
+
+
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """Return a user row by primary key, or None if not found."""
+    with _cursor() as cur:
+        cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def get_all_users_with_refresh_tokens() -> List[Dict[str, Any]]:
+    """Return all users who have a stored refresh token and gmail sync enabled."""
+    with _cursor() as cur:
+        cur.execute(
+            "SELECT * FROM users WHERE refresh_token IS NOT NULL AND gmail_sync_enabled = 1"
+        )
+        return [dict(r) for r in cur.fetchall()]

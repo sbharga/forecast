@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
 import { useEvents } from '../contexts/EventsContext';
+import { useAuth } from '../contexts/AuthContext';
 
 // ─── Theme ─────────────────────────────────────────────────────────────────
 const SCOPE_BLUE = '#007AFF';
@@ -19,17 +20,17 @@ const SLATE      = '#64748B';
 const BG         = '#F2F2F7';
 const GREEN      = '#34C759';
 
-// ─── Source statuses (display-only) ───────────────────────────────────────
-const SOURCES = [
-  { id: 'terplink', label: 'TerpLink',      detail: 'Syncing events',      connected: true  },
-  { id: 'cs_news',  label: 'UMD CS News',   detail: 'RSS feed active',     connected: true  },
-  { id: 'discord',  label: 'Discord',       detail: 'Bot not connected',   connected: false },
-  { id: 'gmail',    label: 'Gmail',         detail: 'Not configured',      connected: false },
+// Static sources (non-Gmail)
+const STATIC_SOURCES = [
+  { id: 'terplink', label: 'TerpLink',    detail: 'Syncing events',    connected: true  },
+  { id: 'cs_news',  label: 'UMD CS News', detail: 'RSS feed active',   connected: true  },
+  { id: 'discord',  label: 'Discord',     detail: 'Bot not connected', connected: false },
 ];
 
 // ─── Screen ────────────────────────────────────────────────────────────────
 export default function IntelScreen() {
   const { userKeywords: keywords, setUserKeywords: setKeywords } = useEvents();
+  const { user, signIn, signOut } = useAuth();
   const [input, setInput] = useState('');
 
   function addKeyword() {
@@ -102,10 +103,10 @@ export default function IntelScreen() {
         {/* ── Connected sources ──────────────────────────────────────── */}
         <Text style={styles.sectionHeader}>CONNECTED SOURCES</Text>
         <View style={styles.card}>
-          {SOURCES.map((src, i) => (
+          {STATIC_SOURCES.map((src, i) => (
             <View
               key={src.id}
-              style={[styles.sourceRow, i < SOURCES.length - 1 && styles.sourceRowBorder]}
+              style={[styles.sourceRow, styles.sourceRowBorder]}
             >
               <View style={styles.sourceLeft}>
                 {src.connected
@@ -124,6 +125,31 @@ export default function IntelScreen() {
               )}
             </View>
           ))}
+
+          {/* Gmail row — auth-aware */}
+          <View style={styles.sourceRow}>
+            <View style={styles.sourceLeft}>
+              {user
+                ? <CheckCircle2 size={20} color={GREEN} />
+                : <Circle       size={20} color={SLATE} />
+              }
+              <View style={styles.sourceText}>
+                <Text style={styles.sourceLabel}>Gmail</Text>
+                <Text style={styles.sourceDetail}>
+                  {user ? user.email : 'Not connected'}
+                </Text>
+              </View>
+            </View>
+            {user ? (
+              <TouchableOpacity onPress={signOut} style={styles.disconnectBtn} activeOpacity={0.7}>
+                <Text style={styles.disconnectBtnText}>Disconnect</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={signIn} style={styles.connectBtn} activeOpacity={0.7}>
+                <Text style={styles.connectBtnText}>Connect</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* ── Tip ───────────────────────────────────────────────────── */}
@@ -201,6 +227,18 @@ const styles = StyleSheet.create({
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3,
   },
   comingSoonText: { fontSize: 11, fontWeight: '600', color: SLATE },
+
+  connectBtn: {
+    backgroundColor: SCOPE_BLUE,
+    borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  connectBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
+
+  disconnectBtn: {
+    backgroundColor: SLATE + '18',
+    borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  disconnectBtnText: { fontSize: 13, fontWeight: '600', color: SLATE },
 
   tip: {
     fontSize: 12, color: SLATE, lineHeight: 18,

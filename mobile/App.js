@@ -7,6 +7,7 @@ import { LayoutList, Map, UserCog } from 'lucide-react-native';
 import * as Location from 'expo-location';
 
 import { EventsProvider } from './contexts/EventsContext';
+import { AuthProvider } from './contexts/AuthContext';
 import MapScreen   from './screens/MapScreen';
 import FeedScreen  from './screens/FeedScreen';
 import IntelScreen from './screens/IntelScreen';
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <AuthProvider>
       <EventsProvider>
         <StatusBar barStyle="dark-content" />
         <NavigationContainer>
@@ -57,6 +59,7 @@ export default function App() {
           </Tab.Navigator>
         </NavigationContainer>
       </EventsProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { calculateScore, KEYWORDS_STORAGE_KEY } from '../utils/scoring';
 
-const API_BASE_URL = 'http://10.173.67.106:8000';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.173.67.106:8000';
 const DEFAULT_KEYWORDS = ['Internship', 'Research', 'Hackathon', 'Python'];
 
 const EventsContext = createContext(null);

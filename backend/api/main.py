@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 
 from core.database import get_upcoming_events, get_events_since, init_db
 from workers.discord import bot
+from workers.gmail_sync import run_gmail_sync_loop
+from api.routes.auth import router as auth_router
 
 load_dotenv()
 
@@ -25,21 +27,27 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    
-    # Start bot
+
+    # Start Discord bot
     bot_token = os.environ.get("DISCORD_BOT_TOKEN")
     bot_task = None
     if bot_token:
         bot_task = asyncio.create_task(bot.start(bot_token))
-        
+
+    # Start Gmail sync loop
+    gmail_task = asyncio.create_task(run_gmail_sync_loop())
+
     yield
-    
+
     # Cleanup
     if bot_task:
         await bot.close()
+    gmail_task.cancel()
 
 
-app = FastAPI(title="Scope API", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="Scope API", version="0.5.0", lifespan=lifespan)
+
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,

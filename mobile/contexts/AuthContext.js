@@ -27,7 +27,14 @@ const GOOGLE_DISCOVERY = {
 // The Expo auth proxy generates an https:// redirect URI that Google's
 // Web Application client accepts. It deep-links back to the app after auth.
 // Log this value and register it in Google Cloud Console → Authorized redirect URIs.
-const REDIRECT_URI = AuthSession.makeRedirectUri({ scheme: 'edu.umd.scope' });
+// iOS OAuth: reverse the client ID to form the scheme.
+// e.g. "791707106408-xxxx.apps.googleusercontent.com" → "com.googleusercontent.apps.791707106408-xxxx"
+const IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
+const _reverseClientId = IOS_CLIENT_ID.split('.').reverse().join('.');
+const REDIRECT_URI = AuthSession.makeRedirectUri({
+  scheme: _reverseClientId,
+  path: 'oauth2redirect/google',
+});
 console.log('[auth] Redirect URI:', REDIRECT_URI);
 
 const AuthContext = createContext(null);

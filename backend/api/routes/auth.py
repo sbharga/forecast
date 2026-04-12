@@ -26,7 +26,7 @@ from core.database import upsert_user
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "")
-_GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+_GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")  # empty for iOS clients
 _TOKEN_URL            = "https://oauth2.googleapis.com/token"
 
 
@@ -59,26 +59,26 @@ def google_sign_in(body: GoogleAuthRequest):
     Exchange a Google authorization code for tokens, upsert the user,
     and return a session JWT + access_token for Google API calls.
     """
-    if not _GOOGLE_CLIENT_ID or not _GOOGLE_CLIENT_SECRET:
+    if not _GOOGLE_CLIENT_ID:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not configured",
+            detail="GOOGLE_CLIENT_ID is not configured",
         )
 
     # Exchange authorization code for tokens (server-side, keeps client_secret safe)
     try:
-        token_resp = httpx.post(
-            _TOKEN_URL,
-            data={
-                "code":          body.code,
-                "code_verifier": body.code_verifier,
-                "redirect_uri":  body.redirect_uri,
-                "client_id":     _GOOGLE_CLIENT_ID,
-                "client_secret": _GOOGLE_CLIENT_SECRET,
-                "grant_type":    "authorization_code",
-            },
-            timeout=10,
-        )
+        payload = {
+            "code":          body.code,
+            "code_verifier": body.code_verifier,
+            "redirect_uri":  body.redirect_uri,
+            "client_id":     _GOOGLE_CLIENT_ID,
+            "grant_type":    "authorization_code",
+        }
+        # iOS OAuth clients are public clients — client_secret is omitted
+        if _GOOGLE_CLIENT_SECRET:
+            payload["client_secret"] = _GOOGLE_CLIENT_SECRET
+
+        token_resp = httpx.post(_TOKEN_URL, data=payload, timeout=10)
         token_resp.raise_for_status()
     except httpx.HTTPStatusError as exc:
         raise HTTPException(

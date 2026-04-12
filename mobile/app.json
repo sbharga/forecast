@@ -20,7 +20,7 @@
         }
       }
     },
-    "scheme": "edu.umd.scope",
+    "scheme": ["edu.umd.scope", "com.googleusercontent.apps.791707106408-g9vuagpigd4hrgde6qibtuma4uicl470"],
     "plugins": [
       "expo-asset",
       "expo-font",
